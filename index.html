@@ -1105,7 +1105,7 @@
 
         const languages = ['cri', 'mohawk', 'navajo', 'inuktitut', 'mikmaq'];
         const languageNames = {
-            cri: 'Cri',
+            cri: 'Cree',
             mohawk: 'Mohawk',
             navajo: 'Navajo',
             inuktitut: 'Inuktitut',
@@ -1144,16 +1144,24 @@
                     optionalServices: [LEGO_HUB_SERVICE]
                 });
 
+                device.addEventListener('gattserverdisconnected', onHubDisconnected);
+
                 server = await device.gatt.connect();
 
                 service = await server.getPrimaryService(LEGO_HUB_SERVICE);
                 characteristic = await service.getCharacteristic(LEGO_HUB_CHARACTERISTIC);
+
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', handleHubNotification);
 
                 document.getElementById('status').textContent =
                     'Statut : Connecté à ' + device.name;
 
                 document.getElementById('connectBtn').disabled = true;
                 document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('showWordBtn').disabled = false;
+
+                showWordOnHub('apprendre un langue');
 
             } catch (error) {
                 console.error('Connection failed:', error);
@@ -1180,8 +1188,22 @@
             service = null;
             characteristic = null;
             document.getElementById('connectBtn').disabled = false;
-            document.getElementById('disconnectBtn').disabled = false;
+            document.getElementById('disconnectBtn').disabled = true;
             document.getElementById('showWordBtn').disabled = true;
+        }
+
+        function handleHubNotification(event) {
+            const bytes = new Uint8Array(event.target.value.buffer);
+            console.log('Hub notification:', Array.from(bytes));
+            // Right-button press handling will depend on the hub notification payload format.
+            // Update the pattern below if your Spike Prime sends a different button event packet.
+            const isRightButton = bytes.length > 0 && bytes[0] === 0x10;
+            if (isRightButton) {
+                currentLanguageIndex = (currentLanguageIndex + 1) % languages.length;
+                updateLanguageNav();
+                document.getElementById('hubDisplay').textContent =
+                    'Langue changée sur le Hub : ' + languageNames[languages[currentLanguageIndex]];
+            }
         }
 
         async function sendCommand(command) {
