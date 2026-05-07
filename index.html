@@ -1142,7 +1142,9 @@
                 device = await navigator.bluetooth.requestDevice({
                     filters: [
                         { namePrefix: 'LEGO' },
-                        { namePrefix: 'SPIKE' }
+                        { namePrefix: 'SPIKE' },
+                        { namePrefix: 'Robert' },
+                        { namePrefix: 'robert' }
                     ],
                     optionalServices: [LEGO_HUB_SERVICE]
                 });
