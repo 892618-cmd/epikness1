@@ -16,7 +16,7 @@ body{
 }
 
 .container{
-    max-width:900px;
+    max-width:950px;
     margin:auto;
     background:white;
     border-radius:18px;
@@ -59,6 +59,14 @@ button:disabled{
     cursor:not-allowed;
 }
 
+.save-btn{
+    background:#2e8b57;
+}
+
+.warning-btn{
+    background:#c97700;
+}
+
 #status{
     margin:18px 0;
     padding:14px;
@@ -95,11 +103,35 @@ button:disabled{
     border-radius:12px;
     background:#eee;
     font-weight:bold;
+    cursor:pointer;
 }
 
 .lang-item.active{
     background:#667eea;
     color:white;
+}
+
+.panel{
+    margin-top:22px;
+    padding:18px;
+    border-radius:14px;
+    background:#fafafa;
+    border:1px solid #ddd;
+}
+
+.panel h3{
+    margin-top:0;
+}
+
+.codebox{
+    text-align:left;
+    background:#111;
+    color:#00ff90;
+    padding:12px;
+    border-radius:10px;
+    overflow:auto;
+    font-family: Consolas, monospace;
+    font-size:13px;
 }
 
 .note{
@@ -123,6 +155,7 @@ button:disabled{
     <button id="prevBtn">← Langue précédente</button>
     <button id="nextBtn">Langue suivante →</button>
     <button id="speakBtn">🔊 Écouter</button>
+    <button id="saveSlot0Btn" class="save-btn" disabled>Sauvegarder dans le slot 0</button>
 </div>
 
 <div id="status">
@@ -137,9 +170,28 @@ button:disabled{
 
 <div class="language-list" id="languageList"></div>
 
+<div class="panel">
+    <h3>Programme prévu pour le slot 0</h3>
+    <p>
+        Ce programme logique sélectionne les langues suivantes :
+        Cri, Mohawk, Navajo, Inuktitut, Mi'kmaq.
+    </p>
+    <div class="codebox">
+slot 0:<br>
+- afficher la langue actuelle<br>
+- bouton droit = langue suivante<br>
+- bouton gauche = langue précédente<br>
+- parler la langue sur le site web<br>
+    </div>
+</div>
+
 <div class="note">
-    Note : Chrome/Edge exige un clic utilisateur pour ouvrir Bluetooth. 
-    La connexion automatique au chargement/téléchargement de la page n’est pas autorisée par le navigateur.
+    Important : Chrome/Edge exige un clic utilisateur pour Bluetooth. 
+    Une page web ne peut pas se connecter automatiquement au chargement.
+    <br><br>
+    Important : le bouton “Sauvegarder dans le slot 0” envoie une commande de test au hub.
+    Pour vraiment installer un programme officiel dans le slot 0, il faut utiliser l’application LEGO SPIKE,
+    Pybricks, ou implémenter le protocole complet de transfert de programme LEGO.
 </div>
 
 </div>
@@ -175,6 +227,7 @@ document.getElementById('nextBtn').addEventListener('click', nextLanguage);
 document.getElementById('speakBtn').addEventListener('click', function(){
     speakText(languages[selectedLanguageIndex]);
 });
+document.getElementById('saveSlot0Btn').addEventListener('click', saveProgramToSlot0);
 
 renderLanguageList();
 updateLanguageDisplay(false);
@@ -186,6 +239,7 @@ function setStatus(message){
 function updateButtons(isConnected){
     document.getElementById('connectBtn').disabled = isConnected;
     document.getElementById('disconnectBtn').disabled = !isConnected;
+    document.getElementById('saveSlot0Btn').disabled = !isConnected;
 }
 
 function renderLanguageList(){
@@ -199,6 +253,7 @@ function renderLanguageList(){
         div.addEventListener('click', function(){
             selectedLanguageIndex = index;
             updateLanguageDisplay(true);
+            updateConnectedStatus();
         });
         list.appendChild(div);
     });
@@ -277,7 +332,8 @@ async function connect(){
         setStatus(
             "Statut : Connecté à <b>" + device.name + "</b><br>" +
             "Service Bluetooth : <b>" + connectedMode + "</b><br>" +
-            "Langue actuelle : <b>" + languages[selectedLanguageIndex] + "</b>"
+            "Langue actuelle : <b>" + languages[selectedLanguageIndex] + "</b><br>" +
+            "Vous pouvez maintenant essayer de sauvegarder dans le slot 0."
         );
 
         try{
@@ -290,11 +346,6 @@ async function connect(){
         }
         catch(notificationError){
             console.warn("Notifications non supportées.", notificationError);
-            setStatus(
-                "Statut : Connecté à <b>" + device.name + "</b><br>" +
-                "Service Bluetooth : <b>" + connectedMode + "</b><br>" +
-                "Note : Les boutons du hub ne peuvent pas être lus avec cette caractéristique. Utilisez les boutons du site."
-            );
         }
 
         updateLanguageDisplay(true);
@@ -342,23 +393,17 @@ function handleHubNotification(event){
 
     /*
       Best-effort hub button detection.
-
-      LEGO messages vary depending on firmware/service.
-      This code:
-      - if it clearly sees left-like values, goes previous
-      - if it clearly sees right-like values, goes next
-      - otherwise any hub button notification goes next
+      Firmware messages can vary.
+      If left/right byte mapping is unknown, default action is next language.
     */
 
     const text = bytes.join(",");
 
     const maybeLeft =
-        text.includes("1,0") ||
         text.includes("255") ||
         bytes.includes(127);
 
     const maybeRight =
-        text.includes("1,1") ||
         bytes.includes(1) ||
         bytes.includes(2);
 
@@ -403,11 +448,9 @@ async function showLanguageOnHub(text){
 
     try{
         /*
-          This sends the selected language to the hub characteristic.
-
-          Important:
-          Official LEGO firmware does not always display plain text directly.
-          If the hub ignores it, the website will still update and speak the language.
+          Plain text write test.
+          The official LEGO firmware may ignore plain text because it expects
+          LEGO Wireless Protocol messages, not raw text.
         */
         const encoder = new TextEncoder();
         const data = encoder.encode(text);
@@ -418,6 +461,58 @@ async function showLanguageOnHub(text){
     }
     catch(error){
         console.warn("Impossible d’écrire directement sur le hub :", error);
+    }
+}
+
+async function saveProgramToSlot0(){
+    if(!characteristic){
+        setStatus("Statut : Connectez d’abord le hub Robert.");
+        return;
+    }
+
+    try{
+        setStatus(
+            "Statut : Tentative de sauvegarde dans le slot 0...<br>" +
+            "Note : Ceci est une commande de test Web Bluetooth."
+        );
+
+        /*
+          Best-effort custom payload.
+          This does NOT guarantee official LEGO slot programming.
+          Official slot programming needs the LEGO/Pybricks program transfer protocol.
+        */
+        const payloadText = JSON.stringify({
+            command: "SAVE_PROGRAM",
+            slot: 0,
+            app: "Epikness",
+            languages: languages,
+            behavior: {
+                left: "previousLanguage",
+                right: "nextLanguage",
+                display: "selectedLanguage"
+            }
+        });
+
+        const encoder = new TextEncoder();
+        const data = encoder.encode(payloadText);
+
+        await characteristic.writeValue(data);
+
+        setStatus(
+            "Statut : Commande envoyée au hub pour le slot 0.<br>" +
+            "Si le hub officiel LEGO ignore la commande, utilisez LEGO SPIKE ou Pybricks pour installer le programme réel.<br>" +
+            "Service utilisé : <b>" + connectedMode + "</b>"
+        );
+
+        console.log("Slot 0 payload sent:", payloadText);
+    }
+    catch(error){
+        console.error(error);
+
+        setStatus(
+            "Statut : Impossible de sauvegarder dans le slot 0 - " + error.message + "<br><br>" +
+            "Raison probable : le firmware LEGO officiel n’accepte pas un programme brut depuis une page web."
+        );
     }
 }
 </script>
