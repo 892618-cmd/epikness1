@@ -335,6 +335,8 @@
 
         let writeCharacteristic = null;
         let notifyCharacteristic = null;
+        let connectionMode = null;
+        let suppressHubDisplayUpdate = false;
 
         // Lessons data
         const lessons = {
@@ -1062,39 +1064,28 @@
 
         async function forgetDevice() {
             try {
-
-                if (device && device.gatt.connected) {
+                if (device && device.gatt && device.gatt.connected) {
                     device.gatt.disconnect();
                 }
 
-                // device.forget() support check
                 if (device && typeof device.forget === 'function') {
                     await device.forget();
-
-                    document.getElementById('status').textContent =
-                        'Statut : Appareil supprimé';
+                    document.getElementById('status').textContent = 'Statut : Appareil supprimé du navigateur';
                 } else {
-
                     document.getElementById('status').textContent =
-                        'Statut : Déconnecté. Remove it manually in chrome://settings/content/bluetoothDevices';
+                        'Statut : device.forget() non supporté. Supprimez-le dans chrome://settings/content/bluetoothDevices';
                 }
 
-                device = null;
-                server = null;
-                service = null;
-                characteristic = null;
-
-                document.getElementById('connectBtn').disabled = false;
-                document.getElementById('disconnectBtn').disabled = true;
+                cleanupHubConnection();
+                console.log('Device forgotten / cleanup completed');
 
             } catch (error) {
-
-                console.error(error);
-
+                console.error('Forget failed:', error);
                 document.getElementById('status').textContent =
-                    'Forget failed: ' + error.message;
+                    'Statut : Impossible de supprimer l’appareil - ' + error.message;
             }
-        }       // Add event listeners for all start lesson buttons
+        }
+        // Add event listeners for all start lesson buttons
         document.querySelectorAll('.startLessonBtn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const language = e.target.getAttribute('data-language');
@@ -1121,7 +1112,7 @@
 
         const languages = ['cri', 'mohawk', 'navajo', 'inuktitut', 'mikmaq'];
         const languageNames = {
-            cri: 'Cree',
+            cri: 'Cri',
             mohawk: 'Mohawk',
             navajo: 'Navajo',
             inuktitut: 'Inuktitut',
@@ -1129,7 +1120,7 @@
         };
         let currentLanguageIndex = 0;
 
-        function updateLanguageNav() {
+        function updateLanguageNav(updateHub = true) {
             const language = languages[currentLanguageIndex];
             document.getElementById('selectedLanguageLabel').textContent = `Langue : ${languageNames[language]}`;
             const section = document.getElementById('lessonSelect-' + language).closest('.language-section');
@@ -1139,16 +1130,17 @@
                     sec.classList.toggle('active-section', sec === section);
                 });
             }
+            if (updateHub && !suppressHubDisplayUpdate && writeCharacteristic) {
+                showLanguageOnHub();
+            }
         }
 
         document.getElementById('prevLanguage').addEventListener('click', () => {
-            currentLanguageIndex = (currentLanguageIndex - 1 + languages.length) % languages.length;
-            updateLanguageNav();
+            selectPreviousLanguage();
         });
 
         document.getElementById('nextLanguage').addEventListener('click', () => {
-            currentLanguageIndex = (currentLanguageIndex + 1) % languages.length;
-            updateLanguageNav();
+            selectNextLanguage();
         });
 
         updateLanguageNav();
@@ -1160,10 +1152,7 @@
 
                 device = await navigator.bluetooth.requestDevice({
                     filters: [
-                        { namePrefix: 'LEGO' },
-                        { namePrefix: 'SPIKE' },
-                        { namePrefix: 'Robert' },
-                        { namePrefix: 'robert' }
+                        { name: 'Robert' }
                     ],
                     optionalServices: [
                         LEGO_LWP3_SERVICE,
@@ -1182,6 +1171,7 @@
                     characteristic = await service.getCharacteristic(LEGO_LWP3_CHARACTERISTIC);
                     writeCharacteristic = characteristic;
                     notifyCharacteristic = characteristic;
+                    connectionMode = 'lwp3';
                     console.log('Connected using LEGO LWP3 service');
                 } catch (lwpError) {
                     console.warn('LEGO LWP3 service not found. Trying SPIKE/Pybricks fd02 service...', lwpError);
@@ -1196,6 +1186,7 @@
                         notifyCharacteristic = null;
                     }
                     characteristic = writeCharacteristic;
+                    connectionMode = 'fd02';
                     console.log('Connected using SPIKE fd02 service');
                 }
 
@@ -1217,7 +1208,9 @@
                 document.getElementById('showWordBtn').disabled = false;
 
                 document.getElementById('hubDisplay').textContent =
-                    'Hub connecté. Démarrez une leçon, puis utilisez Afficher un mot.';
+                    'Hub connecté. Langues : Cri, Mohawk, Navajo, Inuktitut, Mi\'kmaq. Utilisez les flèches du hub ou de la page.';
+
+                await initializeHubLanguageMenu();
 
             } catch (error) {
                 console.error('Connection failed:', error);
@@ -1253,6 +1246,7 @@
             characteristic = null;
             writeCharacteristic = null;
             notifyCharacteristic = null;
+            connectionMode = null;
             document.getElementById('connectBtn').disabled = false;
             document.getElementById('disconnectBtn').disabled = true;
             document.getElementById('showWordBtn').disabled = true;
@@ -1260,16 +1254,75 @@
 
         function handleHubNotification(event) {
             const bytes = new Uint8Array(event.target.value.buffer);
-            console.log('Hub notification:', Array.from(bytes));
-            // Right-button press handling will depend on the hub notification payload format.
-            // Update the pattern below if your Spike Prime sends a different button event packet.
-            const isRightButton = bytes.length > 0 && bytes[0] === 0x10;
-            if (isRightButton) {
-                currentLanguageIndex = (currentLanguageIndex + 1) % languages.length;
-                updateLanguageNav();
-                document.getElementById('hubDisplay').textContent =
-                    'Langue changée sur le Hub : ' + languageNames[languages[currentLanguageIndex]];
+            const packet = Array.from(bytes);
+            console.log('Hub notification:', packet);
+            document.getElementById('hubDisplay').textContent =
+                'Hub event: [' + packet.map(b => '0x' + b.toString(16).padStart(2, '0')).join(' ') + ']';
+
+            const buttonAction = detectHubArrowButton(packet);
+            if (buttonAction === 'left') {
+                selectPreviousLanguage();
+            } else if (buttonAction === 'right') {
+                selectNextLanguage();
             }
+        }
+
+        function detectHubArrowButton(bytes) {
+            // LEGO button packets vary by hub firmware/mode. This detects common LWP3 patterns
+            // and keeps the raw packet in the browser console for easy adjustment.
+            const hex = bytes.map(b => b.toString(16).padStart(2, '0')).join(' ');
+
+            // Common observed button/event style packets may include last-byte button state.
+            // Treat 0x01 / 0x7f as left-like, 0x02 / 0x80 as right-like when a button packet arrives.
+            const looksLikeButtonPacket =
+                bytes.includes(0x01) || bytes.includes(0x02) || bytes.includes(0x7f) || bytes.includes(0x80);
+
+            if (!looksLikeButtonPacket) return null;
+
+            // Safer exact-ish matching first.
+            if (/\b(7f|01)\b/.test(hex) && /\b(05|06|45|46)\b/.test(hex)) return 'left';
+            if (/\b(80|02)\b/.test(hex) && /\b(05|06|45|46)\b/.test(hex)) return 'right';
+
+            // Fallback: use the final byte only if it clearly matches an arrow state.
+            const last = bytes[bytes.length - 1];
+            if (last === 0x01 || last === 0x7f) return 'left';
+            if (last === 0x02 || last === 0x80) return 'right';
+            return null;
+        }
+
+        function selectPreviousLanguage() {
+            currentLanguageIndex = (currentLanguageIndex - 1 + languages.length) % languages.length;
+            updateLanguageNav(true);
+            document.getElementById('hubDisplay').textContent =
+                'Langue sélectionnée : ' + languageNames[languages[currentLanguageIndex]];
+        }
+
+        function selectNextLanguage() {
+            currentLanguageIndex = (currentLanguageIndex + 1) % languages.length;
+            updateLanguageNav(true);
+            document.getElementById('hubDisplay').textContent =
+                'Langue sélectionnée : ' + languageNames[languages[currentLanguageIndex]];
+        }
+
+        async function initializeHubLanguageMenu() {
+            await showLanguageOnHub();
+            // Best-effort: these setup messages ask LWP3 hubs to report input/button changes.
+            // If the hub rejects them, the app still works from the webpage arrows.
+            if (connectionMode === 'lwp3') {
+                try {
+                    await sendCommand([0x0A, 0x00, 0x41, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]);
+                    await sendCommand([0x0A, 0x00, 0x41, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]);
+                } catch (e) {
+                    console.warn('Button subscription setup not accepted by hub:', e);
+                }
+            }
+        }
+
+        async function showLanguageOnHub() {
+            const languageText = languageNames[languages[currentLanguageIndex]];
+            document.getElementById('hubDisplay').textContent =
+                'Hub language menu: Cri | Mohawk | Navajo | Inuktitut | Mi\'kmaq — selected: ' + languageText;
+            await showWordOnHub(languageText);
         }
 
         async function sendCommand(command) {
