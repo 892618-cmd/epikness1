@@ -1,1438 +1,251 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apprentissage du cri avec Spike Prime</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        h1 {
-            color: black;
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        h2 {
-            color: #333;
-            margin-top: 30px;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-        }
-        h3 {
-            color: #333;
-            margin-top: 20px;
-        }
-        .language-section {
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        .language-section:last-child {
-            border-bottom: none;
-        }
-        .language-select {
-            display: block;
-            margin: 15px 0;
-            width: 100%;
-            max-width: 500px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        button {
-            padding: 12px 25px;
-            font-size: 16px;
-            margin: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color:black;
-            border: none;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-        button:active {
-            transform: translateY(-1px);
-        }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-        #status {
-            margin-top: 20px;
-            font-weight: bold;
-            padding: 12px;
-            border-radius: 8px;
-            background-color: #f0f0f0;
-            border-left: 4px solid #667eea;
-        }
-        .lesson {
-            margin: 20px 0;
-            padding: 25px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        .question {
-            margin: 15px 0;
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-        }
-        .option {
-            display: block;
-            margin: 10px 0;
-            padding: 12px 15px;
-            background-color: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .option:hover {
-            border-color: #667eea;
-            background-color: #f0f4ff;
-            transform: translateX(5px);
-        }
-        #feedback {
-            margin-top: 20px;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            border-left: 5px solid #667eea;
-        }
-        #nextBtn {
-            display: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        select {
-            padding: 12px;
-            font-size: 16px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            background-color: white;
-            cursor: pointer;
-            margin: 10px 0;
-        }
-        .language-nav {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            margin: 20px 0;
-            padding: 14px 18px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .language-nav button {
-            width: 48px;
-            min-width: 48px;
-            height: 48px;
-            padding: 0;
-            font-size: 24px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.16);
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-        .language-nav span {
-            font-size: 18px;
-            font-weight: 700;
-            color: white;
-        }
-        .language-section {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .language-section.active-section {
-            transform: scale(1.01);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Epikness - LEGO SPIKE Prime</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#667eea;
+    color:white;
+    text-align:center;
+    padding:30px;
+}
+
+.container{
+    background:white;
+    color:black;
+    max-width:800px;
+    margin:auto;
+    border-radius:15px;
+    padding:30px;
+}
+
+button{
+    padding:12px 20px;
+    margin:10px;
+    border:none;
+    border-radius:10px;
+    background:#667eea;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+#status{
+    margin-top:20px;
+    padding:12px;
+    background:#f0f0f0;
+    border-radius:10px;
+    color:black;
+}
+
+#currentLanguage{
+    font-size:32px;
+    margin-top:30px;
+    font-weight:bold;
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Epikness</h1>
-        <p style="text-align: center; color: white; font-size: 1.2em; margin-bottom: 30px; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);">apprendre n'importe quel langue</p>
-        <button id="connectBtn">Se connecter à Spike Prime</button>
-        <button id="disconnectBtn" disabled>Déconnecter</button>
-        <button id="forgetBtn">Forget Device</button>
-        <button id="showWordBtn" disabled>Afficher un mot sur Spike Prime</button>
-        <div id="status">Statut : Non connecté</div>
-        <div id="hubDisplay" style="margin: 8px 0 16px; color: #f0f0f0; min-height: 1.5em;"></div>
-        <div class="language-nav">
-            <button id="prevLanguage" class="arrow-btn" aria-label="Langue précédente">←</button>
-            <span id="selectedLanguageLabel">Langue : Cri</span>
-            <button id="nextLanguage" class="arrow-btn" aria-label="Langue suivante">→</button>
-        </div>
 
-        <!-- Cri Section -->
-        <div class="language-section">
-            <h2>Cri</h2>
-            <select id="lessonSelect-cri" class="language-select">
-                <option value="1">Leçon 1 : Alphabet - Voyelles (Facile)</option>
-                <option value="2">Leçon 2 : Alphabet - Consonnes (Facile)</option>
-                <option value="3">Leçon 3 : Salutations (Facile)</option>
-                <option value="4">Leçon 4 : Nombres (Facile)</option>
-                <option value="5">Leçon 5 : Couleurs (Moyen)</option>
-                <option value="6">Leçon 6 : Phrases simples (Difficile)</option>
-                <option value="7">Leçon 7 : Famille (Difficile)</option>
-                <option value="8">Leçon 8 : Mots (Difficile)</option>
-                <option value="40">Leçon 9 : Phrases (Très difficile)</option>
-            </select>
-            <button class="startLessonBtn" data-language="cri">Démarrer la leçon</button>
-            <div id="lessonContent-cri" class="lessonContent" style="display: none;">
-                <div class="lesson">
-                    <h3 id="lessonTitle-cri"></h3>
-                    <div id="lessonText-cri"></div>
-                    <div id="quiz-cri"></div>
-                    <div id="feedback-cri"></div>
-                    <button id="nextBtn-cri" class="nextBtn">Question suivante</button>
-                </div>
-            </div>
-        </div>
+<div class="container">
 
-        <!-- Mohawk Section -->
-        <div class="language-section">
-            <h2>Mohawk</h2>
-            <select id="lessonSelect-mohawk" class="language-select">
-                <option value="8">Leçon 1 : Alphabet - Voyelles (Facile)</option>
-                <option value="9">Leçon 2 : Alphabet - Consonnes (Facile)</option>
-                <option value="10">Leçon 3 : Salutations (Facile)</option>
-                <option value="11">Leçon 4 : Nombres (Moyen)</option>
-                <option value="12">Leçon 5 : Couleurs (Moyen)</option>
-                <option value="13">Leçon 6 : Phrases simples (Difficile)</option>
-                <option value="14">Leçon 7 : Famille (Difficile)</option>
-                <option value="36">Leçon 8 : Mots (Difficile)</option>
-                <option value="41">Leçon 9 : Phrases (Très difficile)</option>
-            </select>
-            <button class="startLessonBtn" data-language="mohawk">Démarrer la leçon</button>
-            <div id="lessonContent-mohawk" class="lessonContent" style="display: none;">
-                <div class="lesson">
-                    <h3 id="lessonTitle-mohawk"></h3>
-                    <div id="lessonText-mohawk"></div>
-                    <div id="quiz-mohawk"></div>
-                    <div id="feedback-mohawk"></div>
-                    <button id="nextBtn-mohawk" class="nextBtn">Question suivante</button>
-                </div>
-            </div>
-        </div>
+<h1>Epikness</h1>
 
-        <!-- Navajo Section -->
-        <div class="language-section">
-            <h2>Navajo</h2>
-            <select id="lessonSelect-navajo" class="language-select">
-                <option value="15">Leçon 1 : Alphabet - Voyelles (Facile)</option>
-                <option value="16">Leçon 2 : Alphabet - Consonnes (Facile)</option>
-                <option value="17">Leçon 3 : Salutations (Facile)</option>
-                <option value="18">Leçon 4 : Nombres (Moyen)</option>
-                <option value="19">Leçon 5 : Couleurs (Moyen)</option>
-                <option value="20">Leçon 6 : Phrases simples (Difficile)</option>
-                <option value="21">Leçon 7 : Famille (Difficile)</option>
-                <option value="37">Leçon 8 : Mots (Difficile)</option>
-                <option value="42">Leçon 9 : Phrases (Très difficile)</option>
-            </select>
-            <button class="startLessonBtn" data-language="navajo">Démarrer la leçon</button>
-            <div id="lessonContent-navajo" class="lessonContent" style="display: none;">
-                <div class="lesson">
-                    <h3 id="lessonTitle-navajo"></h3>
-                    <div id="lessonText-navajo"></div>
-                    <div id="quiz-navajo"></div>
-                    <div id="feedback-navajo"></div>
-                    <button id="nextBtn-navajo" class="nextBtn">Question suivante</button>
-                </div>
-            </div>
-        </div>
+<h2>LEGO SPIKE Prime Language Selector</h2>
 
-        <!-- Inuktitut Section -->
-        <div class="language-section">
-            <h2>Inuktitut</h2>
-            <select id="lessonSelect-inuktitut" class="language-select">
-                <option value="22">Leçon 1 : Syllabaires - Série A (Facile)</option>
-                <option value="23">Leçon 2 : Syllabaires - Série I (Facile)</option>
-                <option value="24">Leçon 3 : Salutations (Facile)</option>
-                <option value="25">Leçon 4 : Nombres (Moyen)</option>
-                <option value="26">Leçon 5 : Couleurs (Moyen)</option>
-                <option value="27">Leçon 6 : Phrases simples (Difficile)</option>
-                <option value="28">Leçon 7 : Famille (Difficile)</option>
-                <option value="38">Leçon 8 : Mots (Difficile)</option>
-                <option value="43">Leçon 9 : Phrases (Très difficile)</option>
-            </select>
-            <button class="startLessonBtn" data-language="inuktitut">Démarrer la leçon</button>
-            <div id="lessonContent-inuktitut" class="lessonContent" style="display: none;">
-                <div class="lesson">
-                    <h3 id="lessonTitle-inuktitut"></h3>
-                    <div id="lessonText-inuktitut"></div>
-                    <div id="quiz-inuktitut"></div>
-                    <div id="feedback-inuktitut"></div>
-                    <button id="nextBtn-inuktitut" class="nextBtn">Question suivante</button>
-                </div>
-            </div>
-        </div>
+<button id="connectBtn">Connect to Robert</button>
+<button id="disconnectBtn">Disconnect</button>
 
-        <!-- Mi'kmaq Section -->
-        <div class="language-section">
-            <h2>Mi'kmaq</h2>
-            <select id="lessonSelect-mikmaq" class="language-select">
-                <option value="29">Leçon 1 : Caractères - Série 1 (Facile)</option>
-                <option value="30">Leçon 2 : Caractères - Série 2 (Facile)</option>
-                <option value="31">Leçon 3 : Salutations (Facile)</option>
-                <option value="32">Leçon 4 : Nombres (Moyen)</option>
-                <option value="33">Leçon 5 : Couleurs (Moyen)</option>
-                <option value="34">Leçon 6 : Phrases simples (Difficile)</option>
-                <option value="35">Leçon 7 : Famille (Difficile)</option>
-                <option value="39">Leçon 8 : Mots (Difficile)</option>
-                <option value="44">Leçon 9 : Phrases (Très difficile)</option>
-            </select>
-            <button class="startLessonBtn" data-language="mikmaq">Démarrer la leçon</button>
-            <div id="lessonContent-mikmaq" class="lessonContent" style="display: none;">
-                <div class="lesson">
-                    <h3 id="lessonTitle-mikmaq"></h3>
-                    <div id="lessonText-mikmaq"></div>
-                    <div id="quiz-mikmaq"></div>
-                    <div id="feedback-mikmaq"></div>
-                    <button id="nextBtn-mikmaq" class="nextBtn">Question suivante</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<div id="status">Status: Not connected</div>
 
-    <script>
-        let device = null;
-        let server = null;
-        let service = null;
-        let characteristic = null;
+<div id="currentLanguage">Cri</div>
 
-        // LEGO SPIKE / Powered Up Bluetooth UUIDs
-        const LEGO_LWP3_SERVICE = '00001623-1212-efde-1623-785feabcd123';
-        const LEGO_LWP3_CHARACTERISTIC = '00001624-1212-efde-1623-785feabcd123';
+</div>
 
-        // Some SPIKE/Pybricks modes expose this service instead
-        const SPIKE_SERVICE = '0000fd02-0000-1000-8000-00805f9b34fb';
-        const SPIKE_RX_CHARACTERISTIC = '0000fd02-0001-1000-8000-00805f9b34fb';
-        const SPIKE_TX_CHARACTERISTIC = '0000fd02-0002-1000-8000-00805f9b34fb';
+<script>
 
-        let writeCharacteristic = null;
-        let notifyCharacteristic = null;
-        let connectionMode = null;
-        let suppressHubDisplayUpdate = false;
+let device = null;
+let server = null;
+let service = null;
+let characteristic = null;
 
-        // Lessons data
-        const lessons = {
-            1: {
-                title: "Alphabet - Voyelles",
-                content: "Apprenez les voyelles syllabiques du cri : ᐊ = a, ᐃ = i, ᐅ = o, ᐁ = e.",
-                questions: [
-                    {
-                        question: "Quelle lettre est ᐊ en cri ?",
-                        options: ["a", "i", "o", "e"],
-                        correct: 0,
-                        explanation: "ᐊ = a en cri."
-                    }
-                ]
-            },
-            2: {
-                title: "Alphabet - Consonnes",
-                content: "Apprenez les consonnes du cri : P (ᐸ = pa), T (ᑕ = ta), K (ᑃ = ka), M (ᒪ = ma), N (ᓀ = na), S (ᓵ = sa), Y (ᔦ = ya), L (ᓘ = la), CH (ᒋ = cha).",
-                questions: [
-                    {
-                        question: "Quelle lettre est ᐸ en cri ?",
-                        options: ["pa", "pi", "po", "pe"],
-                        correct: 0,
-                        explanation: "ᐸ = pa en cri."
-                    },
-                    {
-                        question: "Quelle lettre est ᑕ en cri ?",
-                        options: ["ta", "ti", "to", "te"],
-                        correct: 0,
-                        explanation: "ᑕ = ta en cri."
-                    },
-                    {
-                        question: "Quelle lettre est ᒪ en cri ?",
-                        options: ["ma", "mi", "mo", "me"],
-                        correct: 0,
-                        explanation: "ᒪ = ma en cri."
-                    }
-                ]
-            },
-            3: {
-                title: "Salutations",
-                content: "Apprenez les salutations du cri : Tânisi = Bonjour, Kîkway = Comment allez-vous, Tansi = Allo.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Bonjour' en cri ?",
-                        options: ["Tânisi", "Kîkway", "Tansi", "Wahkôhp"],
-                        correct: 0,
-                        explanation: "Tânisi signifie 'Bonjour' en cri."
-                    }
-                ]
-            },
-            4: {
-                title: "Nombres",
-                content: "Apprenez les nombres de 1 à 5 en cri : Pêyak = 1, Nîso = 2, Nisto = 3, Neyo = 4, Niyânan = 5.",
-                questions: [
-                    {
-                        question: "Comment dit-on '1' en cri ?",
-                        options: ["Pêyak", "Nîso", "Nisto", "Neyo"],
-                        correct: 0,
-                        explanation: "Pêyak signifie 1 en cri."
-                    }
-                ]
-            },
-            5: {
-                title: "Couleurs",
-                content: "Apprenez les couleurs en cri : Miskwaa = Rouge, Wâpiskâw = Blanc, Askihkâw = Bleu, Oscihkâw = Jaune.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Rouge' en cri ?",
-                        options: ["Miskwaa", "Wâpiskâw", "Askihkâw", "Oscihkâw"],
-                        correct: 0,
-                        explanation: "Miskwaa signifie rouge en cri."
-                    }
-                ]
-            },
-            6: {
-                title: "Phrases simples",
-                content: "Apprenez des phrases simples en cri : Tânisi, kîkway ? = Bonjour, comment allez-vous ?",
-                questions: [
-                    {
-                        question: "Que signifie 'Tânisi, kîkway ?' en cri ?",
-                        options: ["Bonjour, comment allez-vous ?", "Merci, au revoir", "Bonjour ami", "À plus tard"],
-                        correct: 0,
-                        explanation: "'Tânisi, kîkway ?' signifie 'Bonjour, comment allez-vous ?' en cri."
-                    }
-                ]
-            },
-            7: {
-                title: "Famille",
-                content: "Apprenez les mots de famille en cri : Ohkoma = Grand-mère, Ohkosisa = Grand-père, Nimâma = Mère, Nitânis = Fille.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Mère' en cri ?",
-                        options: ["Nimâma", "Ohkoma", "Ohkosisa", "Nitânis"],
-                        correct: 0,
-                        explanation: "Nimâma signifie 'Mère' en cri."
-                    }
-                ]
-            },
-            8: {
-                title: "Mots",
-                content: "Apprenez à écrire des mots en symboles cri : Tânisi = ᑕᐋᓂᓯ (Bonjour), Kîkway = ᑭᑭᐧᐋᔨ (Comment allez-vous), Miskwaa = ᒥᔅᑵᐊ (Rouge). Phrases : Tânisi, kîkway = ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ (Bonjour, comment allez-vous).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour' en symboles cri ?",
-                        options: ["ᑕᐋᓂᓯ", "ᑭᑭᐧᐋᔨ", "ᒥᔅᑵᐊ", "ᓀᐦᐃᔭᐧᐃᐧᐗᐠ"],
-                        correct: 0,
-                        explanation: "'Bonjour' s'écrit ᑕᐋᓂᓯ en symboles cri."
-                    },
-                    {
-                        question: "Comment écrit-on 'Rouge' en symboles cri ?",
-                        options: ["ᒥᔅᑵᐊ", "ᑕᐋᓂᓯ", "ᑭᑭᐧᐋᔨ", "ᓀᐦᐃᔭᐧᐃᐧᐗᐠ"],
-                        correct: 0,
-                        explanation: "'Rouge' s'écrit ᒥᔅᑵᐊ en symboles cri."
-                    },
-                    {
-                        question: "Comment écrit-on la phrase 'Bonjour, comment allez-vous' en symboles cri ?",
-                        options: ["ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ", "ᒥᔅᑵᐊ ᑕᐋᓂᓯ", "ᑭᑭᐧᐋᔨ ᒥᔅᑵᐊ", "ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ"],
-                        correct: 0,
-                        explanation: "'Bonjour, comment allez-vous' s'écrit ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ en symboles cri."
-                    }
-                ]
-            },
-            40: {
-                title: "Phrases",
-                content: "Apprenez à écrire des phrases en symboles cri en utilisant les mots appris : ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ = Tânisi kîkway (Bonjour, comment allez-vous). ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ = Nîhiyâw tânisi (Homme bonjour). ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ ᒥᔅᑵᐊ = Tânisi kîkway miskwaa (Bonjour, comment allez-vous, rouge). ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ ᒥᔅᑵᐊ = Nîhiyâw tânisi miskwaa (Homme bonjour rouge).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour, comment allez-vous' en symboles cri ? (Facile)",
-                        options: ["ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ", "ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ", "ᑭᑭᐧᐋᔨ ᒥᔅᑵᐊ", "ᒥᔅᑵᐊ ᑕᐋᓂᓯ"],
-                        correct: 0,
-                        explanation: "'Bonjour, comment allez-vous' s'écrit ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ en symboles cri."
-                    },
-                    {
-                        question: "Comment écrit-on 'Homme bonjour' en symboles cri ? (Facile)",
-                        options: ["ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ", "ᑕᐋᓂᓯ ᓀᐦᐃᔭᐧᐃᐧᐗᐠ", "ᑭᑭᐧᐋᔨ ᓀᐦᐃᔭᐧᐃᐧᐗᐠ", "ᒥᔅᑵᐊ ᓀᐦᐃᔭᐧᐃᐧᐗᐠ"],
-                        correct: 0,
-                        explanation: "'Homme bonjour' s'écrit ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ en symboles cri."
-                    },
-                    {
-                        question: "Comment écrit-on 'Bonjour, comment allez-vous, rouge' en symboles cri ? (Moyen)",
-                        options: ["ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ ᒥᔅᑵᐊ", "ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ ᒥᔅᑵᐊ", "ᑭᑭᐧᐋᔨ ᒥᔅᑵᐊ ᑕᐋᓂᓯ", "ᒥᔅᑵᐊ ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ"],
-                        correct: 0,
-                        explanation: "'Bonjour, comment allez-vous, rouge' s'écrit ᑕᐋᓂᓯ ᑭᑭᐧᐋᔨ ᒥᔅᑵᐊ en symboles cri."
-                    },
-                    {
-                        question: "Comment écrit-on 'Homme bonjour rouge' en symboles cri ? (Difficile)",
-                        options: ["ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ ᒥᔅᑵᐊ", "ᑕᐋᓂᓯ ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᒥᔅᑵᐊ", "ᑭᑭᐧᐋᔨ ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᒥᔅᑵᐊ", "ᒥᔅᑵᐊ ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ"],
-                        correct: 0,
-                        explanation: "'Homme bonjour rouge' s'écrit ᓀᐦᐃᔭᐧᐃᐧᐗᐠ ᑕᐋᓂᓯ ᒥᔅᑵᐊ en symboles cri."
-                    }
-                ]
-            },
-            // Mohawk lessons
-            8: {
-                title: "Alphabet - Voyelles",
-                content: "Apprenez les voyelles du Mohawk : A = a, E = e, I = i, O = o.",
-                questions: [
-                    {
-                        question: "Quel son représente 'A' en Mohawk ?",
-                        options: ["a", "e", "i", "o"],
-                        correct: 0,
-                        explanation: "A = 'a' en Mohawk."
-                    }
-                ]
-            },
-            9: {
-                title: "Alphabet - Consonnes",
-                content: "Apprenez les consonnes du Mohawk : K, N, R, S, T, W, Y, H.",
-                questions: [
-                    {
-                        question: "Quel son représente 'K' en Mohawk ?",
-                        options: ["k", "n", "r", "s"],
-                        correct: 0,
-                        explanation: "K = 'k' en Mohawk."
-                    }
-                ]
-            },
-            10: {
-                title: "Salutations",
-                content: "Apprenez les salutations du Mohawk : Swakwekó = Bonjour, Niá:wen = Merci.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Bonjour' en Mohawk ?",
-                        options: ["Swakwekó", "Niá:wen", "Howé:", "Ken:a"],
-                        correct: 0,
-                        explanation: "Swakwekó signifie 'Bonjour' en Mohawk."
-                    }
-                ]
-            },
-            11: {
-                title: "Nombres",
-                content: "Apprenez les nombres de 1 à 5 en Mohawk : È·táho = 1, Tessà·o = 2, Áhsen = 3.",
-                questions: [
-                    {
-                        question: "Comment dit-on '1' en Mohawk ?",
-                        options: ["È·táho", "Tessà·o", "Áhsen", "Kayéri"],
-                        correct: 0,
-                        explanation: "È·táho signifie '1' en Mohawk."
-                    }
-                ]
-            },
-            12: {
-                title: "Couleurs",
-                content: "Apprenez les couleurs en Mohawk : Owera = Rouge, Kokalò = Vert, Thaskarà = Bleu.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Rouge' en Mohawk ?",
-                        options: ["Owera", "Kokalò", "Thaskarà", "Wiskà"],
-                        correct: 0,
-                        explanation: "Owera signifie 'Rouge' en Mohawk."
-                    }
-                ]
-            },
-            13: {
-                title: "Phrases simples",
-                content: "Apprenez des phrases simples en Mohawk.",
-                questions: [
-                    {
-                        question: "Que signifie 'Ón:kwa' ?",
-                        options: ["Bonjour", "Merci", "Oui", "Non"],
-                        correct: 0,
-                        explanation: "'Ón:kwa' signifie 'Bonjour' en Mohawk."
-                    }
-                ]
-            },
-            14: {
-                title: "Famille",
-                content: "Apprenez les mots de famille en Mohawk : Aká:ra = Mère, Háksa = Père.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Mère' en Mohawk ?",
-                        options: ["Aká:ra", "Háksa", "Ihkén:ha", "Kaierá:tahkwa"],
-                        correct: 0,
-                        explanation: "Aká:ra signifie 'Mère' en Mohawk."
-                    }
-                ]
-            },
-            36: {
-                title: "Mots",
-                content: "Apprenez à écrire des mots en symboles Mohawk : Swakwekó = ᔕᐧᐊᑿᑯ (Bonjour), Niá:wen = ᓂᐊᐧᐁᓐ (Merci), Owera = ᐅᐧᐁᕋ (Rouge). Phrases : Swakwekó, niá:wen = ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ (Bonjour, merci).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour' en symboles Mohawk ?",
-                        options: ["ᔕᐧᐊᑿᑯ", "ᓂᐊᐧᐁᓐ", "ᐅᐧᐁᕋ", "ᑲᐃᐁᕋᐧᑕᐦᑿᐊ"],
-                        correct: 0,
-                        explanation: "'Bonjour' s'écrit ᔕᐧᐊᑿᑯ en symboles Mohawk."
-                    },
-                    {
-                        question: "Comment écrit-on 'Rouge' en symboles Mohawk ?",
-                        options: ["ᐅᐧᐁᕋ", "ᔕᐧᐊᑿᑯ", "ᓂᐊᐧᐁᓐ", "ᑲᐃᐁᕋᐧᑕᐦᑿᐊ"],
-                        correct: 0,
-                        explanation: "'Rouge' s'écrit ᐅᐧᐁᕋ en symboles Mohawk."
-                    },
-                    {
-                        question: "Comment écrit-on la phrase 'Bonjour, merci' en symboles Mohawk ?",
-                        options: ["ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ", "ᐅᐧᐁᕋ ᔕᐧᐊᑿᑯ", "ᓂᐊᐧᐁᓐ ᐅᐧᐁᕋ", "ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci' s'écrit ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ en symboles Mohawk."
-                    }
-                ]
-            },
-            41: {
-                title: "Phrases",
-                content: "Apprenez à écrire des phrases en symboles Mohawk en utilisant les mots appris : ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ = Swakwekó niá:wen (Bonjour, merci). ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ = Kaierá:tahkwa swakwekó (Femme bonjour). ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ ᐅᐧᐁᕋ = Swakwekó niá:wen owera (Bonjour, merci, rouge). ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ ᐅᐧᐁᕋ = Kaierá:tahkwa swakwekó owera (Femme bonjour rouge).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour, merci' en symboles Mohawk ? (Facile)",
-                        options: ["ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ", "ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ", "ᓂᐊᐧᐁᓐ ᐅᐧᐁᕋ", "ᐅᐧᐁᕋ ᔕᐧᐊᑿᑯ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci' s'écrit ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ en symboles Mohawk."
-                    },
-                    {
-                        question: "Comment écrit-on 'Femme bonjour' en symboles Mohawk ? (Facile)",
-                        options: ["ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ", "ᔕᐧᐊᑿᑯ ᑲᐃᐁᕋᐧᑕᐦᑿᐊ", "ᓂᐊᐧᐁᓐ ᑲᐃᐁᕋᐧᑕᐦᑿᐊ", "ᐅᐧᐁᕋ ᑲᐃᐁᕋᐧᑕᐦᑿᐊ"],
-                        correct: 0,
-                        explanation: "'Femme bonjour' s'écrit ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ en symboles Mohawk."
-                    },
-                    {
-                        question: "Comment écrit-on 'Bonjour, merci, rouge' en symboles Mohawk ? (Moyen)",
-                        options: ["ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ ᐅᐧᐁᕋ", "ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ ᐅᐧᐁᕋ", "ᓂᐊᐧᐁᓐ ᐅᐧᐁᕋ ᔕᐧᐊᑿᑯ", "ᐅᐧᐁᕋ ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci, rouge' s'écrit ᔕᐧᐊᑿᑯ ᓂᐊᐧᐁᓐ ᐅᐧᐁᕋ en symboles Mohawk."
-                    },
-                    {
-                        question: "Comment écrit-on 'Femme bonjour rouge' en symboles Mohawk ? (Difficile)",
-                        options: ["ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ ᐅᐧᐁᕋ", "ᔕᐧᐊᑿᑯ ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᐅᐧᐁᕋ", "ᓂᐊᐧᐁᓐ ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᐅᐧᐁᕋ", "ᐅᐧᐁᕋ ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ"],
-                        correct: 0,
-                        explanation: "'Femme bonjour rouge' s'écrit ᑲᐃᐁᕋᐧᑕᐦᑿᐊ ᔕᐧᐊᑿᑯ ᐅᐧᐁᕋ en symboles Mohawk."
-                    }
-                ]
-            },
-            // Navajo lessons
-            15: {
-                title: "Alphabet - Voyelles",
-                content: "Apprenez les voyelles du Navajo : a, e, i, o.",
-                questions: [
-                    {
-                        question: "Quel son représente 'a' en Navajo ?",
-                        options: ["a", "e", "i", "o"],
-                        correct: 0,
-                        explanation: "'a' = 'a' en Navajo."
-                    }
-                ]
-            },
-            16: {
-                title: "Alphabet - Consonnes",
-                content: "Apprenez les consonnes du Navajo : b, ch, d, g, h, j, k, l.",
-                questions: [
-                    {
-                        question: "Quel son représente 'ch' en Navajo ?",
-                        options: ["ch", "sh", "th", "zh"],
-                        correct: 0,
-                        explanation: "'ch' = 'ch' en Navajo."
-                    }
-                ]
-            },
-            17: {
-                title: "Salutations",
-                content: "Apprenez les salutations du Navajo : Yá'át'ééh = Bonjour, Ahéhee = Merci.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Bonjour' en Navajo ?",
-                        options: ["Yá'át'ééh", "Ahéhee", "Yoo = éé", "Hózhǫ́"],
-                        correct: 0,
-                        explanation: "Yá'át'ééh signifie 'Bonjour' en Navajo."
-                    }
-                ]
-            },
-            18: {
-                title: "Nombres",
-                content: "Apprenez les nombres de 1 à 5 en Navajo : Łah = 1, Naaki = 2, Tá'í = 3.",
-                questions: [
-                    {
-                        question: "Comment dit-on '1' en Navajo ?",
-                        options: ["Łah", "Naaki", "Tá'í", "Díí"],
-                        correct: 0,
-                        explanation: "Łah signifie '1' en Navajo."
-                    }
-                ]
-            },
-            19: {
-                title: "Couleurs",
-                content: "Apprenez les couleurs en Navajo : Lichíí = Rouge, Dootłizh = Bleu, Dilshoni = Vert.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Rouge' en Navajo ?",
-                        options: ["Lichíí", "Dootłizh", "Dilshoni", "Łigai"],
-                        correct: 0,
-                        explanation: "Lichíí signifie 'Rouge' en Navajo."
-                    }
-                ]
-            },
-            20: {
-                title: "Phrases simples",
-                content: "Apprenez des phrases simples en Navajo.",
-                questions: [
-                    {
-                        question: "Que signifie 'Hágoshǫ́ láah' ?",
-                        options: ["Au revoir", "Comment allez-vous", "Je vais bien", "Merci beaucoup"],
-                        correct: 0,
-                        explanation: "'Hágoshǫ́ láah' signifie 'Au revoir' en Navajo."
-                    }
-                ]
-            },
-            21: {
-                title: "Famille",
-                content: "Apprenez les mots de famille en Navajo : Shimá = Mère, Shizhe'é = Père, Shinaali = Grand-mère, Shicheii = Grand-père.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Mère' en Navajo ?",
-                        options: ["Shimá", "Shizhe'é", "Shinaali", "Shicheii"],
-                        correct: 0,
-                        explanation: "Shimá signifie 'Mère' en Navajo."
-                    }
-                ]
-            },
-            37: {
-                title: "Mots",
-                content: "Apprenez à écrire des mots en symboles Navajo : Yá'át'ééh = Yá'át'ééh (Bonjour), Ahéhee = Ahéhee (Merci), Lichíí = Lichíí (Rouge). Phrases : Yá'át'ééh, ahéhee = Yá'át'ééh ahéhee (Bonjour, merci).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour' en symboles Navajo ?",
-                        options: ["Yá'át'ééh", "Ahéhee", "Lichíí", "Hózhǫ́"],
-                        correct: 0,
-                        explanation: "'Bonjour' s'écrit Yá'át'ééh en symboles Navajo."
-                    },
-                    {
-                        question: "Comment écrit-on 'Rouge' en symboles Navajo ?",
-                        options: ["Lichíí", "Yá'át'ééh", "Ahéhee", "Hózhǫ́"],
-                        correct: 0,
-                        explanation: "'Rouge' s'écrit Lichíí en symboles Navajo."
-                    },
-                    {
-                        question: "Comment écrit-on la phrase 'Bonjour, merci' en symboles Navajo ?",
-                        options: ["Yá'át'ééh ahéhee", "Lichíí Yá'át'ééh", "Ahéhee Lichíí", "Hózhǫ́ Yá'át'ééh"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci' s'écrit Yá'át'ééh ahéhee en symboles Navajo."
-                    }
-                ]
-            },
-            42: {
-                title: "Phrases",
-                content: "Apprenez à écrire des phrases en symboles Navajo en utilisant les mots appris : Yá'át'ééh ahéhee = Yá'át'ééh ahéhee (Bonjour, merci). Hózhǫ́ Yá'át'ééh = Hózhǫ́ Yá'át'ééh (Beau bonjour). Yá'át'ééh ahéhee Lichíí = Yá'át'ééh ahéhee Lichíí (Bonjour, merci, rouge). Hózhǫ́ Yá'át'ééh ahéhee = Hózhǫ́ Yá'át'ééh ahéhee (Beau bonjour merci).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour, merci' en symboles Navajo ? (Facile)",
-                        options: ["Yá'át'ééh ahéhee", "Hózhǫ́ Yá'át'ééh", "Ahéhee Lichíí", "Lichíí Yá'át'ééh"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci' s'écrit Yá'át'ééh ahéhee en symboles Navajo."
-                    },
-                    {
-                        question: "Comment écrit-on 'Beau bonjour' en symboles Navajo ? (Facile)",
-                        options: ["Hózhǫ́ Yá'át'ééh", "Yá'át'ééh Hózhǫ́", "Ahéhee Hózhǫ́", "Lichíí Hózhǫ́"],
-                        correct: 0,
-                        explanation: "'Beau bonjour' s'écrit Hózhǫ́ Yá'át'ééh en symboles Navajo."
-                    },
-                    {
-                        question: "Comment écrit-on 'Bonjour, merci, rouge' en symboles Navajo ? (Moyen)",
-                        options: ["Yá'át'ééh ahéhee Lichíí", "Hózhǫ́ Yá'át'ééh ahéhee", "Ahéhee Lichíí Yá'át'ééh", "Lichíí Yá'át'ééh ahéhee"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci, rouge' s'écrit Yá'át'ééh ahéhee Lichíí en symboles Navajo."
-                    },
-                    {
-                        question: "Comment écrit-on 'Beau bonjour merci' en symboles Navajo ? (Difficile)",
-                        options: ["Hózhǫ́ Yá'át'ééh ahéhee", "Yá'át'ééh Hózhǫ́ ahéhee", "Ahéhee Hózhǫ́ Yá'át'ééh", "Lichíí Hózhǫ́ ahéhee"],
-                        correct: 0,
-                        explanation: "'Beau bonjour merci' s'écrit Hózhǫ́ Yá'át'ééh ahéhee en symboles Navajo."
-                    }
-                ]
-            },
-            // Inuktitut lessons
-            22: {
-                title: "Syllabaires - Série A",
-                content: "Apprenez la série A du Inuktitut syllabaire : ᐃ = i, ᐅ = u, ᐁ = ai.",
-                questions: [
-                    {
-                        question: "Quel son représente 'ᐃ' en Inuktitut ?",
-                        options: ["i", "u", "ai", "a"],
-                        correct: 0,
-                        explanation: "ᐃ = 'i' en Inuktitut."
-                    }
-                ]
-            },
-            23: {
-                title: "Syllabaires - Série I",
-                content: "Apprenez la série I du Inuktitut syllabaire : ᑉ = p, ᑕ = t, ᑭ = k.",
-                questions: [
-                    {
-                        question: "Quel son représente 'ᑉ' en Inuktitut ?",
-                        options: ["p", "t", "k", "m"],
-                        correct: 0,
-                        explanation: "ᑉ = 'p' en Inuktitut."
-                    }
-                ]
-            },
-            24: {
-                title: "Salutations",
-                content: "Apprenez les salutations du Inuktitut : Aloha = Bonjour, Qujanaq = Merci.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Merci' en Inuktitut ?",
-                        options: ["Qujanaq", "Aloha", "Ajunngeilak", "Quin'a"],
-                        correct: 0,
-                        explanation: "Qujanaq signifie 'Merci' en Inuktitut."
-                    }
-                ]
-            },
-            25: {
-                title: "Nombres",
-                content: "Apprenez les nombres de 1 à 5 en Inuktitut : Atausiq = 1, Marluk = 2, Pingasut = 3.",
-                questions: [
-                    {
-                        question: "Comment dit-on '1' en Inuktitut ?",
-                        options: ["Atausiq", "Marluk", "Pingasut", "Sisamat"],
-                        correct: 0,
-                        explanation: "Atausiq signifie '1' en Inuktitut."
-                    }
-                ]
-            },
-            26: {
-                title: "Couleurs",
-                content: "Apprenez les couleurs en Inuktitut : Tuktu = Rouge, Qairniq = Bleu, Kiviok = Vert, Qanniq = Blanc.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Blanc' en Inuktitut ?",
-                        options: ["Qanniq", "Tuktu", "Qairniq", "Kiviok"],
-                        correct: 0,
-                        explanation: "Qanniq signifie 'Blanc' en Inuktitut."
-                    }
-                ]
-            },
-            27: {
-                title: "Phrases simples",
-                content: "Apprenez des phrases simples en Inuktitut.",
-                questions: [
-                    {
-                        question: "Que signifie 'Pauramunga ?' ?",
-                        options: ["Ça va bien ?", "Quelle heure ?", "Où allez-vous ?", "Quoi de neuf ?"],
-                        correct: 0,
-                        explanation: "'Pauramunga ?' signifie 'Ça va bien ?' en Inuktitut."
-                    }
-                ]
-            },
-            28: {
-                title: "Famille",
-                content: "Apprenez les mots de famille en Inuktitut : Anaana = Mère, Ataata = Père, Anaanatsiak = Grand-mère, Ataaatsiak = Grand-père.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Mère' en Inuktitut ?",
-                        options: ["Anaana", "Ataata", "Anaanatsiak", "Ataaatsiak"],
-                        correct: 0,
-                        explanation: "Anaana signifie 'Mère' en Inuktitut."
-                    }
-                ]
-            },            38: {
-                title: "Mots",
-                content: "Apprenez à écrire des mots en symboles Inuktitut : Ai = ᐊᐃ (Bonjour), Nakurmiik = ᓇᑯᕐᒥᐃᒃ (Merci), Qaqqaq = ᖃᖅᖃᖅ (Rouge). Phrases : Ai, nakurmiik = ᐊᐃ ᓇᑯᕐᒥᐃᒃ (Bonjour, merci).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour' en symboles Inuktitut ?",
-                        options: ["ᐊᐃ", "ᓇᑯᕐᒥᐃᒃ", "ᖃᖅᖃᖅ", "ᐃᓄᒃᑎᑐᑦ"],
-                        correct: 0,
-                        explanation: "'Bonjour' s'écrit ᐊᐃ en symboles Inuktitut."
-                    },
-                    {
-                        question: "Comment écrit-on 'Rouge' en symboles Inuktitut ?",
-                        options: ["ᖃᖅᖃᖅ", "ᐊᐃ", "ᓇᑯᕐᒥᐃᒃ", "ᐃᓄᒃᑎᑐᑦ"],
-                        correct: 0,
-                        explanation: "'Rouge' s'écrit ᖃᖅᖃᖅ en symboles Inuktitut."
-                    },
-                    {
-                        question: "Comment écrit-on la phrase 'Bonjour, merci' en symboles Inuktitut ?",
-                        options: ["ᐊᐃ ᓇᑯᕐᒥᐃᒃ", "ᖃᖅᖃᖅ ᐊᐃ", "ᓇᑯᕐᒥᐃᒃ ᖃᖅᖃᖅ", "ᐃᓄᒃᑎᑐᑦ ᐊᐃ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci' s'écrit ᐊᐃ ᓇᑯᕐᒥᐃᒃ en symboles Inuktitut."
-                    }
-                ]
-            },            // Mi'kmaq lessons
-            43: {
-                title: "Phrases",
-                content: "Apprenez à écrire des phrases en symboles Inuktitut en utilisant les mots appris : ᐊᐃ ᓇᑯᕐᒥᐃᒃ = Ai nakurmiik (Bonjour, merci). ᐃᓄᒃᑎᑐᑦ ᐊᐃ = Inuktitut ai (Inuktitut bonjour). ᐊᐃ ᓇᑯᕐᒥᐃᒃ ᖃᖅᖃᖅ = Ai nakurmiik qaqqaq (Bonjour, merci, rouge). ᐃᓄᒃᑎᑐᑦ ᐊᐃ ᖃᖅᖃᖅ = Inuktitut ai qaqqaq (Inuktitut bonjour rouge).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour, merci' en symboles Inuktitut ? (Facile)",
-                        options: ["ᐊᐃ ᓇᑯᕐᒥᐃᒃ", "ᐃᓄᒃᑎᑐᑦ ᐊᐃ", "ᓇᑯᕐᒥᐃᒃ ᖃᖅᖃᖅ", "ᖃᖅᖃᖅ ᐊᐃ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci' s'écrit ᐊᐃ ᓇᑯᕐᒥᐃᒃ en symboles Inuktitut."
-                    },
-                    {
-                        question: "Comment écrit-on 'Inuktitut bonjour' en symboles Inuktitut ? (Facile)",
-                        options: ["ᐃᓄᒃᑎᑐᑦ ᐊᐃ", "ᐊᐃ ᐃᓄᒃᑎᑐᑦ", "ᓇᑯᕐᒥᐃᒃ ᐃᓄᒃᑎᑐᑦ", "ᖃᖅᖃᖅ ᐃᓄᒃᑎᑐᑦ"],
-                        correct: 0,
-                        explanation: "'Inuktitut bonjour' s'écrit ᐃᓄᒃᑎᑐᑦ ᐊᐃ en symboles Inuktitut."
-                    },
-                    {
-                        question: "Comment écrit-on 'Bonjour, merci, rouge' en symboles Inuktitut ? (Moyen)",
-                        options: ["ᐊᐃ ᓇᑯᕐᒥᐃᒃ ᖃᖅᖃᖅ", "ᐃᓄᒃᑎᑐᑦ ᐊᐃ ᖃᖅᖃᖅ", "ᓇᑯᕐᒥᐃᒃ ᖃᖅᖃᖅ ᐊᐃ", "ᖃᖅᖃᖅ ᐊᐃ ᓇᑯᕐᒥᐃᒃ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci, rouge' s'écrit ᐊᐃ ᓇᑯᕐᒥᐃᒃ ᖃᖅᖃᖅ en symboles Inuktitut."
-                    },
-                    {
-                        question: "Comment écrit-on 'Inuktitut bonjour rouge' en symboles Inuktitut ? (Difficile)",
-                        options: ["ᐃᓄᒃᑎᑐᑦ ᐊᐃ ᖃᖅᖃᖅ", "ᐊᐃ ᐃᓄᒃᑎᑐᑦ ᖃᖅᖃᖅ", "ᓇᑯᕐᒥᐃᒃ ᐃᓄᒃᑎᑐᑦ ᖃᖅᖃᖅ", "ᖃᖅᖃᖅ ᐃᓄᒃᑎᑐᑦ ᐊᐃ"],
-                        correct: 0,
-                        explanation: "'Inuktitut bonjour rouge' s'écrit ᐃᓄᒃᑎᑐᑦ ᐊᐃ ᖃᖅᖃᖅ en symboles Inuktitut."
-                    }
-                ]
-            },
-            // Mi'kmaq lessons
-            29: {
-                title: "Caractères - Série 1",
-                content: "Apprenez les caractères Mi'kmaq : ᐦ = h, ᐧ = w, ᐩ = y.",
-                questions: [
-                    {
-                        question: "Quel son représente 'ᐦ' en Mi'kmaq ?",
-                        options: ["h", "w", "y", "k"],
-                        correct: 0,
-                        explanation: "ᐦ = 'h' en Mi'kmaq."
-                    }
-                ]
-            },
-            30: {
-                title: "Caractères - Série 2",
-                content: "Apprenez les caractères Mi'kmaq : ᐸ = p, ᑕ = t, ᑭ = k.",
-                questions: [
-                    {
-                        question: "Quel son représente 'ᐸ' en Mi'kmaq ?",
-                        options: ["p", "t", "k", "m"],
-                        correct: 0,
-                        explanation: "ᐸ = 'p' en Mi'kmaq."
-                    }
-                ]
-            },
-            31: {
-                title: "Salutations",
-                content: "Apprenez les salutations du Mi'kmaq : Kwelkwes = Bonjour, Wela'lin = Merci.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Bonjour' en Mi'kmaq ?",
-                        options: ["Kwelkwes", "Wela'lin", "Helpa", "Kesikw"],
-                        correct: 0,
-                        explanation: "Kwelkwes signifie 'Bonjour' en Mi'kmaq."
-                    }
-                ]
-            },
-            32: {
-                title: "Nombres",
-                content: "Apprenez les nombres de 1 à 5 en Mi'kmaq : Neq = 1, Tab = 2, Nisgw = 3.",
-                questions: [
-                    {
-                        question: "Comment dit-on '1' en Mi'kmaq ?",
-                        options: ["Neq", "Tab", "Nisgw", "Mewi"],
-                        correct: 0,
-                        explanation: "Neq signifie '1' en Mi'kmaq."
-                    }
-                ]
-            },
-            33: {
-                title: "Couleurs",
-                content: "Apprenez les couleurs en Mi'kmaq : Sumlawte' = Rouge, Petu' = Bleu, Mtegwe' = Vert.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Rouge' en Mi'kmaq ?",
-                        options: ["Sumlawte'", "Petu'", "Mtegwe'", "Waptek"],
-                        correct: 0,
-                        explanation: "Sumlawte' signifie 'Rouge' en Mi'kmaq."
-                    }
-                ]
-            },
-            34: {
-                title: "Phrases simples",
-                content: "Apprenez des phrases simples en Mi'kmaq.",
-                questions: [
-                    {
-                        question: "Que signifie 'Tami jel wen ?' ?",
-                        options: ["Qui êtes-vous ?", "D'où venez-vous ?", "Où allez-vous ?", "Comment allez-vous ?"],
-                        correct: 0,
-                        explanation: "'Tami jel wen ?' signifie 'Qui êtes-vous ?' en Mi'kmaq."
-                    }
-                ]
-            },
-            35: {
-                title: "Famille",
-                content: "Apprenez les mots de famille en Mi'kmaq : Motegw = Mère, Musteq = Père, Moqwei = Grand-mère, Musteqwei = Grand-père.",
-                questions: [
-                    {
-                        question: "Comment dit-on 'Mère' en Mi'kmaq ?",
-                        options: ["Motegw", "Musteq", "Moqwei", "Musteqwei"],
-                        correct: 0,
-                        explanation: "Motegw signifie 'Mère' en Mi'kmaq."
-                    }
-                ]
-            },
-            39: {
-                title: "Mots",
-                content: "Apprenez à écrire des mots en symboles Mi'kmaq : Kesalul = ᑫᓵᓗᓪ (Bonjour), Wela'lin = ᐧᐁᓵᐧᐃᓐ (Merci), Wapek = ᐧᐊᐯᒃ (Rouge). Phrases : Kesalul, wela'lin = ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ (Bonjour, merci).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour' en symboles Mi'kmaq ?",
-                        options: ["ᑫᓵᓗᓪ", "ᐧᐁᓵᐧᐃᓐ", "ᐧᐊᐯᒃ", "ᒥᒃᒪᒃ"],
-                        correct: 0,
-                        explanation: "'Bonjour' s'écrit ᑫᓵᓗᓪ en symboles Mi'kmaq."
-                    },
-                    {
-                        question: "Comment écrit-on 'Rouge' en symboles Mi'kmaq ?",
-                        options: ["ᐧᐊᐯᒃ", "ᑫᓵᓗᓪ", "ᐧᐁᓵᐧᐃᓐ", "ᒥᒃᒪᒃ"],
-                        correct: 0,
-                        explanation: "'Rouge' s'écrit ᐧᐊᐯᒃ en symboles Mi'kmaq."
-                    },
-                    {
-                        question: "Comment écrit-on la phrase 'Bonjour, merci' en symboles Mi'kmaq ?",
-                        options: ["ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ", "ᐧᐊᐯᒃ ᑫᓵᓗᓪ", "ᐧᐁᓵᐧᐃᓐ ᐧᐊᐯᒃ", "ᒥᒃᒪᒃ ᑫᓵᓗᓪ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci' s'écrit ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ en symboles Mi'kmaq."
-                    }
-                ]
-            },
-            44: {
-                title: "Phrases",
-                content: "Apprenez à écrire des phrases en symboles Mi'kmaq en utilisant les mots appris : ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ = Kesalul wela'lin (Bonjour, merci). ᒥᒃᒪᒃ ᑫᓵᓗᓪ = Mi'kmaq kesalul (Mi'kmaq bonjour). ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ ᐧᐊᐯᒃ = Kesalul wela'lin wapek (Bonjour, merci, rouge). ᒥᒃᒪᒃ ᑫᓵᓗᓪ ᐧᐊᐯᒃ = Mi'kmaq kesalul wapek (Mi'kmaq bonjour rouge).",
-                questions: [
-                    {
-                        question: "Comment écrit-on 'Bonjour, merci' en symboles Mi'kmaq ? (Facile)",
-                        options: ["ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ", "ᒥᒃᒪᒃ ᑫᓵᓗᓪ", "ᐧᐁᓵᐧᐃᓐ ᐧᐊᐯᒃ", "ᐧᐊᐯᒃ ᑫᓵᓗᓪ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci' s'écrit ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ en symboles Mi'kmaq."
-                    },
-                    {
-                        question: "Comment écrit-on 'Mi'kmaq bonjour' en symboles Mi'kmaq ? (Facile)",
-                        options: ["ᒥᒃᒪᒃ ᑫᓵᓗᓪ", "ᑫᓵᓗᓪ ᒥᒃᒪᒃ", "ᐧᐁᓵᐧᐃᓐ ᒥᒃᒪᒃ", "ᐧᐊᐯᒃ ᒥᒃᒪᒃ"],
-                        correct: 0,
-                        explanation: "'Mi'kmaq bonjour' s'écrit ᒥᒃᒪᒃ ᑫᓵᓗᓪ en symboles Mi'kmaq."
-                    },
-                    {
-                        question: "Comment écrit-on 'Bonjour, merci, rouge' en symboles Mi'kmaq ? (Moyen)",
-                        options: ["ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ ᐧᐊᐯᒃ", "ᒥᒃᒪᒃ ᑫᓵᓗᓪ ᐧᐊᐯᒃ", "ᐧᐁᓵᐧᐃᓐ ᐧᐊᐯᒃ ᑫᓵᓗᓪ", "ᐧᐊᐯᒃ ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ"],
-                        correct: 0,
-                        explanation: "'Bonjour, merci, rouge' s'écrit ᑫᓵᓗᓪ ᐧᐁᓵᐧᐃᓐ ᐧᐊᐯᒃ en symboles Mi'kmaq."
-                    },
-                    {
-                        question: "Comment écrit-on 'Mi'kmaq bonjour rouge' en symboles Mi'kmaq ? (Difficile)",
-                        options: ["ᒥᒃᒪᒃ ᑫᓵᓗᓪ ᐧᐊᐯᒃ", "ᑫᓵᓗᓪ ᒥᒃᒪᒃ ᐧᐊᐯᒃ", "ᐧᐁᓵᐧᐃᓐ ᒥᒃᒪᒃ ᐧᐊᐯᒃ", "ᐧᐊᐯᒃ ᒥᒃᒪᒃ ᑫᓵᓗᓪ"],
-                        correct: 0,
-                        explanation: "'Mi'kmaq bonjour rouge' s'écrit ᒥᒃᒪᒃ ᑫᓵᓗᓪ ᐧᐊᐯᒃ en symboles Mi'kmaq."
-                    }
-                ]
-            },
-        };
+const LEGO_HUB_SERVICE =
+    '00001623-1212-efde-1623-785feabcd123';
 
-        document.getElementById('connectBtn').addEventListener('click', connect);
-        document.getElementById('disconnectBtn').addEventListener('click', disconnect);
-        document.getElementById('showWordBtn').addEventListener('click', () => {
-            const language = languages[currentLanguageIndex];
-            const state = languageState[language];
-            if (!state.lesson) {
-                document.getElementById('hubDisplay').textContent = 'Démarrez d\u00e9jà une leçon pour envoyer un mot.';
-                return;
-            }
-            const question = state.lesson.questions[state.questionIndex];
-            showWordOnHub(question.options[question.correct]);
-        });
-        
-        document.getElementById('forgetBtn').addEventListener('click', forgetDevice);
+const LEGO_HUB_CHARACTERISTIC =
+    '00001624-1212-efde-1623-785feabcd123';
 
-        async function forgetDevice() {
-            try {
-                if (device && device.gatt && device.gatt.connected) {
-                    device.gatt.disconnect();
-                }
+const languages = [
+    "Cri",
+    "Mohawk",
+    "Navajo",
+    "Inuktitut",
+    "Mi'kmaq"
+];
 
-                if (device && typeof device.forget === 'function') {
-                    await device.forget();
-                    document.getElementById('status').textContent = 'Statut : Appareil supprimé du navigateur';
-                } else {
-                    document.getElementById('status').textContent =
-                        'Statut : device.forget() non supporté. Supprimez-le dans chrome://settings/content/bluetoothDevices';
-                }
+let selectedLanguageIndex = 0;
 
-                cleanupHubConnection();
-                console.log('Device forgotten / cleanup completed');
+document.getElementById('connectBtn')
+    .addEventListener('click', connect);
 
-            } catch (error) {
-                console.error('Forget failed:', error);
-                document.getElementById('status').textContent =
-                    'Statut : Impossible de supprimer l’appareil - ' + error.message;
-            }
-        }
-        // Add event listeners for all start lesson buttons
-        document.querySelectorAll('.startLessonBtn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const language = e.target.getAttribute('data-language');
-                startLesson(language);
+document.getElementById('disconnectBtn')
+    .addEventListener('click', disconnect);
+
+function updateLanguageDisplay(){
+
+    const language =
+        languages[selectedLanguageIndex];
+
+    document.getElementById('currentLanguage')
+        .textContent = language;
+
+    speakText(language);
+
+    showLanguageOnHub(language);
+}
+
+function speakText(text){
+
+    if(!('speechSynthesis' in window)){
+        return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance =
+        new SpeechSynthesisUtterance(text);
+
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+
+    window.speechSynthesis.speak(utterance);
+}
+
+async function connect(){
+
+    try{
+
+        device =
+            await navigator.bluetooth.requestDevice({
+                filters: [
+                    { name: 'Robert' }
+                ],
+                optionalServices: [
+                    LEGO_HUB_SERVICE
+                ]
             });
-        });
-        
-        // Add event listeners for all next buttons
-        document.querySelectorAll('.nextBtn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const language = e.target.id.split('-')[1];
-                nextQuestion(language);
-            });
-        });
 
-        // Store current lesson state for each language
-        const languageState = {
-            'cri': { lesson: null, questionIndex: 0 },
-            'mohawk': { lesson: null, questionIndex: 0 },
-            'navajo': { lesson: null, questionIndex: 0 },
-            'inuktitut': { lesson: null, questionIndex: 0 },
-            'mikmaq': { lesson: null, questionIndex: 0 }
-        };
+        server =
+            await device.gatt.connect();
 
-        const languages = ['cri', 'mohawk', 'navajo', 'inuktitut', 'mikmaq'];
-        const languageNames = {
-            cri: 'Cri',
-            mohawk: 'Mohawk',
-            navajo: 'Navajo',
-            inuktitut: 'Inuktitut',
-            mikmaq: 'Mi\'kmaq'
-        };
-        let currentLanguageIndex = 0;
+        service =
+            await server.getPrimaryService(
+                LEGO_HUB_SERVICE
+            );
 
-        function updateLanguageNav(updateHub = true) {
-            const language = languages[currentLanguageIndex];
-            document.getElementById('selectedLanguageLabel').textContent = `Langue : ${languageNames[language]}`;
-            const section = document.getElementById('lessonSelect-' + language).closest('.language-section');
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                document.querySelectorAll('.language-section').forEach(sec => {
-                    sec.classList.toggle('active-section', sec === section);
-                });
-            }
-            if (updateHub && !suppressHubDisplayUpdate && writeCharacteristic) {
-                showLanguageOnHub();
-            }
-        }
+        characteristic =
+            await service.getCharacteristic(
+                LEGO_HUB_CHARACTERISTIC
+            );
 
-        document.getElementById('prevLanguage').addEventListener('click', () => {
-            selectPreviousLanguage();
-        });
+        document.getElementById('status')
+            .textContent =
+            'Connected to ' + device.name;
 
-        document.getElementById('nextLanguage').addEventListener('click', () => {
-            selectNextLanguage();
-        });
+        console.log("Connected!");
 
-        updateLanguageNav();
+        updateLanguageDisplay();
 
-        async function connect() {
-            try {
-                cleanupHubConnection(false);
-                document.getElementById('status').textContent = 'Statut : Sélectionnez le hub LEGO SPIKE Prime...';
+        await characteristic.startNotifications();
 
-                device = await navigator.bluetooth.requestDevice({
-                    filters: [
-                        { name: 'Robert' }
-                    ],
-                    optionalServices: [
-                        LEGO_LWP3_SERVICE,
-                        SPIKE_SERVICE
-                    ]
-                });
+        characteristic.addEventListener(
+            'characteristicvaluechanged',
+            handleHubNotification
+        );
 
-                device.addEventListener('gattserverdisconnected', onHubDisconnected);
+    }
+    catch(error){
 
-                document.getElementById('status').textContent = 'Statut : Connexion au hub...';
-                server = await device.gatt.connect();
+        console.error(error);
 
-                // Try standard LEGO Wireless Protocol first.
-                try {
-                    service = await server.getPrimaryService(LEGO_LWP3_SERVICE);
-                    characteristic = await service.getCharacteristic(LEGO_LWP3_CHARACTERISTIC);
-                    writeCharacteristic = characteristic;
-                    notifyCharacteristic = characteristic;
-                    connectionMode = 'lwp3';
-                    console.log('Connected using LEGO LWP3 service');
-                } catch (lwpError) {
-                    console.warn('LEGO LWP3 service not found. Trying SPIKE/Pybricks fd02 service...', lwpError);
-                    service = await server.getPrimaryService(SPIKE_SERVICE);
+        document.getElementById('status')
+            .textContent =
+            'Connection failed - ' + error.message;
+    }
+}
 
-                    // fd02 normally uses separate RX/TX characteristics.
-                    writeCharacteristic = await service.getCharacteristic(SPIKE_RX_CHARACTERISTIC);
-                    try {
-                        notifyCharacteristic = await service.getCharacteristic(SPIKE_TX_CHARACTERISTIC);
-                    } catch (txError) {
-                        console.warn('TX notify characteristic not found. Continuing with write only.', txError);
-                        notifyCharacteristic = null;
-                    }
-                    characteristic = writeCharacteristic;
-                    connectionMode = 'fd02';
-                    console.log('Connected using SPIKE fd02 service');
-                }
+function disconnect(){
 
-                // Notifications are optional. Some hubs/chars do not support startNotifications().
-                if (notifyCharacteristic && notifyCharacteristic.properties && notifyCharacteristic.properties.notify) {
-                    try {
-                        await notifyCharacteristic.startNotifications();
-                        notifyCharacteristic.addEventListener('characteristicvaluechanged', handleHubNotification);
-                    } catch (notifyError) {
-                        console.warn('Notifications not supported on this characteristic. Continuing write-only.', notifyError);
-                    }
-                }
+    if(device && device.gatt.connected){
+        device.gatt.disconnect();
+    }
 
-                document.getElementById('status').textContent =
-                    'Statut : Connecté à ' + (device.name || 'LEGO Hub');
+    document.getElementById('status')
+        .textContent =
+        'Disconnected';
+}
 
-                document.getElementById('connectBtn').disabled = true;
-                document.getElementById('disconnectBtn').disabled = false;
-                document.getElementById('showWordBtn').disabled = false;
+function handleHubNotification(event){
 
-                document.getElementById('hubDisplay').textContent =
-                    'Hub connecté. Langues : Cri, Mohawk, Navajo, Inuktitut, Mi\'kmaq. Utilisez les flèches du hub ou de la page.';
+    const value =
+        new Uint8Array(event.target.value.buffer);
 
-                await initializeHubLanguageMenu();
+    console.log("Hub notification:", value);
 
-            } catch (error) {
-                console.error('Connection failed:', error);
+    // RIGHT button simulation
+    // adjust if needed based on actual values
 
-                if (device && device.gatt && device.gatt.connected) {
-                    device.gatt.disconnect();
-                }
-                cleanupHubConnection(false);
+    nextLanguage();
+}
 
-                document.getElementById('status').textContent =
-                    'Statut : Échec de la connexion - ' + error.message;
-            }
-        }
+function nextLanguage(){
 
-        async function disconnect() {
-            if (device && device.gatt.connected) {
-                device.gatt.disconnect();
-            }
-            cleanupHubConnection();
-        }
+    selectedLanguageIndex++;
 
-        function onHubDisconnected() {
-            cleanupHubConnection();
-            document.getElementById('status').textContent = 'Statut : Hub déconnecté';
-        }
+    if(selectedLanguageIndex >= languages.length){
+        selectedLanguageIndex = 0;
+    }
 
-        function cleanupHubConnection(clearDevice = true) {
-            if (clearDevice) {
-                device = null;
-            }
-            server = null;
-            service = null;
-            characteristic = null;
-            writeCharacteristic = null;
-            notifyCharacteristic = null;
-            connectionMode = null;
-            document.getElementById('connectBtn').disabled = false;
-            document.getElementById('disconnectBtn').disabled = true;
-            document.getElementById('showWordBtn').disabled = true;
-        }
+    updateLanguageDisplay();
+}
 
-        function handleHubNotification(event) {
-            const bytes = new Uint8Array(event.target.value.buffer);
-            const packet = Array.from(bytes);
-            console.log('Hub notification:', packet);
-            document.getElementById('hubDisplay').textContent =
-                'Hub event: [' + packet.map(b => '0x' + b.toString(16).padStart(2, '0')).join(' ') + ']';
+async function showLanguageOnHub(text){
 
-            const buttonAction = detectHubArrowButton(packet);
-            if (buttonAction === 'left') {
-                selectPreviousLanguage();
-            } else if (buttonAction === 'right') {
-                selectNextLanguage();
-            }
-        }
+    if(!characteristic){
+        return;
+    }
 
-        function detectHubArrowButton(bytes) {
-            // LEGO button packets vary by hub firmware/mode. This detects common LWP3 patterns
-            // and keeps the raw packet in the browser console for easy adjustment.
-            const hex = bytes.map(b => b.toString(16).padStart(2, '0')).join(' ');
+    try{
 
-            // Common observed button/event style packets may include last-byte button state.
-            // Treat 0x01 / 0x7f as left-like, 0x02 / 0x80 as right-like when a button packet arrives.
-            const looksLikeButtonPacket =
-                bytes.includes(0x01) || bytes.includes(0x02) || bytes.includes(0x7f) || bytes.includes(0x80);
+        const encoder = new TextEncoder();
 
-            if (!looksLikeButtonPacket) return null;
+        const data =
+            encoder.encode(text);
 
-            // Safer exact-ish matching first.
-            if (/\b(7f|01)\b/.test(hex) && /\b(05|06|45|46)\b/.test(hex)) return 'left';
-            if (/\b(80|02)\b/.test(hex) && /\b(05|06|45|46)\b/.test(hex)) return 'right';
+        await characteristic.writeValue(data);
 
-            // Fallback: use the final byte only if it clearly matches an arrow state.
-            const last = bytes[bytes.length - 1];
-            if (last === 0x01 || last === 0x7f) return 'left';
-            if (last === 0x02 || last === 0x80) return 'right';
-            return null;
-        }
+        console.log("Sent to hub:", text);
+    }
+    catch(error){
 
-        function selectPreviousLanguage() {
-            currentLanguageIndex = (currentLanguageIndex - 1 + languages.length) % languages.length;
-            updateLanguageNav(true);
-            document.getElementById('hubDisplay').textContent =
-                'Langue sélectionnée : ' + languageNames[languages[currentLanguageIndex]];
-        }
+        console.log(
+            "Unable to display on hub:",
+            error
+        );
+    }
+}
 
-        function selectNextLanguage() {
-            currentLanguageIndex = (currentLanguageIndex + 1) % languages.length;
-            updateLanguageNav(true);
-            document.getElementById('hubDisplay').textContent =
-                'Langue sélectionnée : ' + languageNames[languages[currentLanguageIndex]];
-        }
+</script>
 
-        async function initializeHubLanguageMenu() {
-            await showLanguageOnHub();
-            // Best-effort: these setup messages ask LWP3 hubs to report input/button changes.
-            // If the hub rejects them, the app still works from the webpage arrows.
-            if (connectionMode === 'lwp3') {
-                try {
-                    await sendCommand([0x0A, 0x00, 0x41, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]);
-                    await sendCommand([0x0A, 0x00, 0x41, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01]);
-                } catch (e) {
-                    console.warn('Button subscription setup not accepted by hub:', e);
-                }
-            }
-        }
-
-        async function showLanguageOnHub() {
-            const languageText = languageNames[languages[currentLanguageIndex]];
-            document.getElementById('hubDisplay').textContent =
-                'Hub language menu: Cri | Mohawk | Navajo | Inuktitut | Mi\'kmaq — selected: ' + languageText;
-            await showWordOnHub(languageText);
-        }
-
-        async function sendCommand(command) {
-            if (!writeCharacteristic) {
-                console.warn('Not connected to Spike Prime');
-                document.getElementById('status').textContent = 'Statut : Hub non connecté';
-                return;
-            }
-            try {
-                const data = new Uint8Array(command);
-                if (writeCharacteristic.properties && writeCharacteristic.properties.writeWithoutResponse) {
-                    await writeCharacteristic.writeValueWithoutResponse(data);
-                } else {
-                    await writeCharacteristic.writeValue(data);
-                }
-                console.log('Command sent:', command);
-            } catch (error) {
-                console.error('Failed to send command:', error);
-                document.getElementById('status').textContent =
-                    'Statut : Commande non supportée par ce mode du hub - ' + error.message;
-            }
-        }
-
-        function runMotor(portMask, speed, duration = 1000) {
-            // Port A = 0x01, Port B = 0x02 for LEGO Hub output ports
-            sendCommand([0x81, 0x00, 0x11, 0x51, portMask, speed]);
-            setTimeout(() => sendCommand([0x81, 0x00, 0x11, 0x51, portMask, 0x00]), duration);
-        }
-
-        async function showWordOnHub(text) {
-            if (!writeCharacteristic) {
-                console.warn('Not connected to Spike Prime');
-                document.getElementById('hubDisplay').textContent = 'Connectez le Hub pour afficher un mot.';
-                return;
-            }
-
-            const displayText = String(text).slice(0, 14);
-            const encoder = new TextEncoder();
-            const payload = Array.from(encoder.encode(displayText));
-            // Use the hub advertising name property as a lightweight way to request text display.
-            // Some Spike Prime hubs show short names on the LED matrix or internal status display.
-            const command = [0x01, 0x01, 0x01, ...payload];
-
-            await sendCommand(command);
-            document.getElementById('hubDisplay').textContent = 'Affichage demandé au Hub : ' + displayText;
-            document.getElementById('status').textContent = 'Statut : Envoi du mot au Hub — ' + displayText;
-        }
-
-        function startLesson(language) {
-            const lessonId = document.getElementById('lessonSelect-' + language).value;
-            languageState[language].lesson = lessons[lessonId];
-            languageState[language].questionIndex = 0;
-            const state = languageState[language];
-            document.getElementById('lessonTitle-' + language).textContent = state.lesson.title;
-            document.getElementById('lessonText-' + language).textContent = state.lesson.content;
-            document.getElementById('lessonContent-' + language).style.display = 'block';
-            showQuestion(language);
-        }
-
-        function showQuestion(language) {
-            const state = languageState[language];
-            const question = state.lesson.questions[state.questionIndex];
-            const quizDiv = document.getElementById('quiz-' + language);
-            quizDiv.innerHTML = `<div class="question">${question.question}</div>`;
-            question.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.className = 'option';
-                button.addEventListener('click', () => checkAnswer(index, language));
-                quizDiv.appendChild(button);
-            });
-            document.getElementById('feedback-' + language).textContent = '';
-            document.getElementById('nextBtn-' + language).style.display = 'none';
-        }
-
-        function checkAnswer(selectedIndex, language) {
-            const state = languageState[language];
-            const question = state.lesson.questions[state.questionIndex];
-            const feedbackDiv = document.getElementById('feedback-' + language);
-            const selectedWord = question.options[selectedIndex];
-            const correctWord = question.options[question.correct];
-
-            if (selectedIndex === question.correct) {
-                feedbackDiv.textContent = 'Correct ! ' + question.explanation;
-                feedbackDiv.style.color = 'green';
-                // Correct answer: raise motor on Port B
-                runMotor(0x02, 0x64, 1000);
-                showWordOnHub(correctWord);
-            } else {
-                feedbackDiv.textContent = 'Incorrect. ' + question.explanation;
-                feedbackDiv.style.color = 'red';
-                // Wrong answer: raise motor on Port A
-                runMotor(0x01, 0x64, 1000);
-                showWordOnHub(correctWord);
-            }
-            document.getElementById('nextBtn-' + language).style.display = 'inline';
-        }
-
-        function nextQuestion(language) {
-            const state = languageState[language];
-            state.questionIndex++;
-            if (state.questionIndex < state.lesson.questions.length) {
-                showQuestion(language);
-            } else {
-                document.getElementById('lessonContent-' + language).style.display = 'none';
-                document.getElementById('quiz-' + language).innerHTML = '<p>Leçon terminée ! Choisissez une autre leçon.</p>';
-                document.getElementById('feedback-' + language).textContent = '';
-                document.getElementById('nextBtn-' + language).style.display = 'none';
-            }
-        }
-    </script>
 </body>
 </html>
