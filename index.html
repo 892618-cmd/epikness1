@@ -1062,28 +1062,39 @@
 
         async function forgetDevice() {
             try {
-                if (device && device.gatt && device.gatt.connected) {
+
+                if (device && device.gatt.connected) {
                     device.gatt.disconnect();
                 }
 
+                // device.forget() support check
                 if (device && typeof device.forget === 'function') {
                     await device.forget();
-                    document.getElementById('status').textContent = 'Statut : Appareil supprimé du navigateur';
-                } else {
+
                     document.getElementById('status').textContent =
-                        'Statut : device.forget() non supporté. Supprimez-le dans chrome://settings/content/bluetoothDevices';
+                        'Statut : Appareil supprimé';
+                } else {
+
+                    document.getElementById('status').textContent =
+                        'Statut : Déconnecté. Remove it manually in chrome://settings/content/bluetoothDevices';
                 }
 
-                cleanupHubConnection();
-                console.log('Device forgotten / cleanup completed');
+                device = null;
+                server = null;
+                service = null;
+                characteristic = null;
+
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
 
             } catch (error) {
-                console.error('Forget failed:', error);
+
+                console.error(error);
+
                 document.getElementById('status').textContent =
-                    'Statut : Impossible de supprimer l’appareil - ' + error.message;
+                    'Forget failed: ' + error.message;
             }
-        }
-        // Add event listeners for all start lesson buttons
+        }       // Add event listeners for all start lesson buttons
         document.querySelectorAll('.startLessonBtn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const language = e.target.getAttribute('data-language');
