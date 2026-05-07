@@ -324,8 +324,17 @@
         let service = null;
         let characteristic = null;
 
-        const LEGO_HUB_SERVICE = '00001623-1212-efde-1623-785feabcd123';
-        const LEGO_HUB_CHARACTERISTIC = '00001624-1212-efde-1623-785feabcd123';
+        // LEGO SPIKE / Powered Up Bluetooth UUIDs
+        const LEGO_LWP3_SERVICE = '00001623-1212-efde-1623-785feabcd123';
+        const LEGO_LWP3_CHARACTERISTIC = '00001624-1212-efde-1623-785feabcd123';
+
+        // Some SPIKE/Pybricks modes expose this service instead
+        const SPIKE_SERVICE = '0000fd02-0000-1000-8000-00805f9b34fb';
+        const SPIKE_RX_CHARACTERISTIC = '0000fd02-0001-1000-8000-00805f9b34fb';
+        const SPIKE_TX_CHARACTERISTIC = '0000fd02-0002-1000-8000-00805f9b34fb';
+
+        let writeCharacteristic = null;
+        let notifyCharacteristic = null;
 
         // Lessons data
         const lessons = {
@@ -1053,29 +1062,25 @@
 
         async function forgetDevice() {
             try {
-
-                if (device && device.gatt.connected) {
+                if (device && device.gatt && device.gatt.connected) {
                     device.gatt.disconnect();
                 }
 
-                // Remove browser permission/pairing
-                await device.forget();
+                if (device && typeof device.forget === 'function') {
+                    await device.forget();
+                    document.getElementById('status').textContent = 'Statut : Appareil supprimé du navigateur';
+                } else {
+                    document.getElementById('status').textContent =
+                        'Statut : device.forget() non supporté. Supprimez-le dans chrome://settings/content/bluetoothDevices';
+                }
 
-                device = null;
-                server = null;
-                service = null;
-                characteristic = null;
-
-                document.getElementById('status').textContent =
-                    'Statut : Appareil supprimé';
-
-                document.getElementById('connectBtn').disabled = false;
-                document.getElementById('disconnectBtn').disabled = true;
-
-                console.log("Device forgotten successfully");
+                cleanupHubConnection();
+                console.log('Device forgotten / cleanup completed');
 
             } catch (error) {
-                console.error("Forget failed:", error);
+                console.error('Forget failed:', error);
+                document.getElementById('status').textContent =
+                    'Statut : Impossible de supprimer l’appareil - ' + error.message;
             }
         }
         // Add event listeners for all start lesson buttons
@@ -1139,6 +1144,9 @@
 
         async function connect() {
             try {
+                cleanupHubConnection(false);
+                document.getElementById('status').textContent = 'Statut : Sélectionnez le hub LEGO SPIKE Prime...';
+
                 device = await navigator.bluetooth.requestDevice({
                     filters: [
                         { namePrefix: 'LEGO' },
@@ -1146,30 +1154,68 @@
                         { namePrefix: 'Robert' },
                         { namePrefix: 'robert' }
                     ],
-                    optionalServices: [LEGO_HUB_SERVICE]
+                    optionalServices: [
+                        LEGO_LWP3_SERVICE,
+                        SPIKE_SERVICE
+                    ]
                 });
 
                 device.addEventListener('gattserverdisconnected', onHubDisconnected);
 
+                document.getElementById('status').textContent = 'Statut : Connexion au hub...';
                 server = await device.gatt.connect();
 
-                service = await server.getPrimaryService(LEGO_HUB_SERVICE);
-                characteristic = await service.getCharacteristic(LEGO_HUB_CHARACTERISTIC);
+                // Try standard LEGO Wireless Protocol first.
+                try {
+                    service = await server.getPrimaryService(LEGO_LWP3_SERVICE);
+                    characteristic = await service.getCharacteristic(LEGO_LWP3_CHARACTERISTIC);
+                    writeCharacteristic = characteristic;
+                    notifyCharacteristic = characteristic;
+                    console.log('Connected using LEGO LWP3 service');
+                } catch (lwpError) {
+                    console.warn('LEGO LWP3 service not found. Trying SPIKE/Pybricks fd02 service...', lwpError);
+                    service = await server.getPrimaryService(SPIKE_SERVICE);
 
-                await characteristic.startNotifications();
-                characteristic.addEventListener('characteristicvaluechanged', handleHubNotification);
+                    // fd02 normally uses separate RX/TX characteristics.
+                    writeCharacteristic = await service.getCharacteristic(SPIKE_RX_CHARACTERISTIC);
+                    try {
+                        notifyCharacteristic = await service.getCharacteristic(SPIKE_TX_CHARACTERISTIC);
+                    } catch (txError) {
+                        console.warn('TX notify characteristic not found. Continuing with write only.', txError);
+                        notifyCharacteristic = null;
+                    }
+                    characteristic = writeCharacteristic;
+                    console.log('Connected using SPIKE fd02 service');
+                }
+
+                // Notifications are optional. Some hubs/chars do not support startNotifications().
+                if (notifyCharacteristic && notifyCharacteristic.properties && notifyCharacteristic.properties.notify) {
+                    try {
+                        await notifyCharacteristic.startNotifications();
+                        notifyCharacteristic.addEventListener('characteristicvaluechanged', handleHubNotification);
+                    } catch (notifyError) {
+                        console.warn('Notifications not supported on this characteristic. Continuing write-only.', notifyError);
+                    }
+                }
 
                 document.getElementById('status').textContent =
-                    'Statut : Connecté à ' + device.name;
+                    'Statut : Connecté à ' + (device.name || 'LEGO Hub');
 
                 document.getElementById('connectBtn').disabled = true;
                 document.getElementById('disconnectBtn').disabled = false;
                 document.getElementById('showWordBtn').disabled = false;
 
-                showWordOnHub('apprendre un langue');
+                document.getElementById('hubDisplay').textContent =
+                    'Hub connecté. Démarrez une leçon, puis utilisez Afficher un mot.';
 
             } catch (error) {
                 console.error('Connection failed:', error);
+
+                if (device && device.gatt && device.gatt.connected) {
+                    device.gatt.disconnect();
+                }
+                cleanupHubConnection(false);
+
                 document.getElementById('status').textContent =
                     'Statut : Échec de la connexion - ' + error.message;
             }
@@ -1187,11 +1233,15 @@
             document.getElementById('status').textContent = 'Statut : Hub déconnecté';
         }
 
-        function cleanupHubConnection() {
-            device = null;
+        function cleanupHubConnection(clearDevice = true) {
+            if (clearDevice) {
+                device = null;
+            }
             server = null;
             service = null;
             characteristic = null;
+            writeCharacteristic = null;
+            notifyCharacteristic = null;
             document.getElementById('connectBtn').disabled = false;
             document.getElementById('disconnectBtn').disabled = true;
             document.getElementById('showWordBtn').disabled = true;
@@ -1212,15 +1262,23 @@
         }
 
         async function sendCommand(command) {
-            if (!characteristic) {
+            if (!writeCharacteristic) {
                 console.warn('Not connected to Spike Prime');
+                document.getElementById('status').textContent = 'Statut : Hub non connecté';
                 return;
             }
             try {
-                await characteristic.writeValue(new Uint8Array(command));
+                const data = new Uint8Array(command);
+                if (writeCharacteristic.properties && writeCharacteristic.properties.writeWithoutResponse) {
+                    await writeCharacteristic.writeValueWithoutResponse(data);
+                } else {
+                    await writeCharacteristic.writeValue(data);
+                }
                 console.log('Command sent:', command);
             } catch (error) {
                 console.error('Failed to send command:', error);
+                document.getElementById('status').textContent =
+                    'Statut : Commande non supportée par ce mode du hub - ' + error.message;
             }
         }
 
@@ -1231,7 +1289,7 @@
         }
 
         async function showWordOnHub(text) {
-            if (!characteristic) {
+            if (!writeCharacteristic) {
                 console.warn('Not connected to Spike Prime');
                 document.getElementById('hubDisplay').textContent = 'Connectez le Hub pour afficher un mot.';
                 return;
