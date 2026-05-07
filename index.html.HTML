@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apprentissage du cri avec Spike Prime</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f8ff;
+        }
+        h1, h2 {
+            color: #2e8b57;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .lesson {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+        .question {
+            margin: 10px 0;
+        }
+        .option {
+            display: block;
+            margin: 5px 0;
+        }
+        #feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #nextBtn {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Apprentissage du cri avec LEGO Spike Prime</h1>
+    <button id="connectBtn">Se connecter à Spike Prime</button>
+    <button id="disconnectBtn" disabled>Déconnecter</button>
+    <div id="status">Statut : Non connecté</div>
+
+    <h2>Sélectionner une leçon</h2>
+    <select id="lessonSelect">
+        <option value="1">Leçon 1 : Alphabet - Voyelles (Facile)</option>
+        <option value="2">Leçon 2 : Alphabet - Consonnes P, T, K (Facile)</option>
+        <option value="3">Leçon 3 : Alphabet - Consonnes M, N, S (Facile)</option>
+        <option value="4">Leçon 4 : Alphabet - Consonnes Y, L, CH (Facile)</option>
+        <option value="5">Leçon 5 : Nombres (Facile)</option>
+        <option value="6">Leçon 6 : Couleurs (Moyen)</option>
+        <option value="7">Leçon 7 : Phrases simples (Difficile)</option>
+    </select>
+    <button id="startLessonBtn">Démarrer la leçon</button>
+
+    <div id="lessonContent" style="display: none;">
+        <div class="lesson">
+            <h2 id="lessonTitle"></h2>
+            <div id="lessonText"></div>
+            <div id="quiz"></div>
+            <div id="feedback"></div>
+            <button id="nextBtn">Question suivante</button>
+        </div>
+    </div>
+
+    <script>
+        let device = null;
+        let server = null;
+        let service = null;
+        let characteristic = null;
+        let currentLesson = null;
+        let currentQuestionIndex = 0;
+
+        const LEGO_HUB_SERVICE = '00001623-1212-efde-1623-785feabcd123';
+        const LEGO_HUB_CHARACTERISTIC = '00001624-1212-efde-1623-785feabcd123';
+
+        // Lessons data
+        const lessons = {
+            1: {
+                title: "Alphabet - Voyelles",
+                content: "Apprenez les voyelles syllabiques du cri : ᐊ = a, ᐃ = i, ᐅ = o, ᐁ = e.",
+                questions: [
+                    {
+                        question: "Quelle lettre est ᐊ en cri ?",
+                        options: ["a", "i", "o", "e"],
+                        correct: 0,
+                        explanation: "ᐊ = a en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᐃ en cri ?",
+                        options: ["i", "a", "o", "e"],
+                        correct: 0,
+                        explanation: "ᐃ = i en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᐅ en cri ?",
+                        options: ["o", "i", "a", "e"],
+                        correct: 0,
+                        explanation: "ᐅ = o en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᐁ en cri ?",
+                        options: ["e", "a", "i", "o"],
+                        correct: 0,
+                        explanation: "ᐁ = e en cri."
+                    }
+                ]
+            },
+            2: {
+                title: "Alphabet - Consonnes P, T, K",
+                content: "Apprenez les consonnes P, T, et K : ᐸ = pa, ᐲ = pi, ᐳ = po, ᐴ = pe, ᑕ = ta, ᑖ = ti, ᑗ = to, ᑘ = te, ᑃ = ka, ᑭ = ki, ᑯ = ko, ᑰ = ke.",
+                questions: [
+                    {
+                        question: "Quelle lettre est ᐸ en cri ?",
+                        options: ["pa", "pi", "po", "pe"],
+                        correct: 0,
+                        explanation: "ᐸ = pa en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᐲ en cri ?",
+                        options: ["pi", "pa", "po", "pe"],
+                        correct: 0,
+                        explanation: "ᐲ = pi en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᐳ en cri ?",
+                        options: ["po", "pa", "pi", "pe"],
+                        correct: 0,
+                        explanation: "ᐳ = po en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᐴ en cri ?",
+                        options: ["pe", "pa", "pi", "po"],
+                        correct: 0,
+                        explanation: "ᐴ = pe en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᑕ en cri ?",
+                        options: ["ta", "ti", "to", "te"],
+                        correct: 0,
+                        explanation: "ᑕ = ta en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᑖ en cri ?",
+                        options: ["ti", "ta", "to", "te"],
+                        correct: 0,
+                        explanation: "ᑖ = ti en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᑗ en cri ?",
+                        options: ["to", "ta", "ti", "te"],
+                        correct: 0,
+                        explanation: "ᑗ = to en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᑘ en cri ?",
+                        options: ["te", "ta", "ti", "to"],
+                        correct: 0,
+                        explanation: "ᑘ = te en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᑃ en cri ?",
+                        options: ["ka", "ki", "ko", "ke"],
+                        correct: 0,
+                        explanation: "ᑃ = ka en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᑭ en cri ?",
+                        options: ["ki", "ka", "ko", "ke"],
+                        correct: 0,
+                        explanation: "ᑭ = ki en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᑯ en cri ?",
+                        options: ["ko", "ka", "ki", "ke"],
+                        correct: 0,
+                        explanation: "ᑯ = ko en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᑰ en cri ?",
+                        options: ["ke", "ka", "ki", "ko"],
+                        correct: 0,
+                        explanation: "ᑰ = ke en cri."
+                    }
+                ]
+            },
+            3: {
+                title: "Alphabet - Consonnes M, N, S",
+                content: "Apprenez les consonnes M, N, et S : ᒪ = ma, ᒥ = mi, ᒧ = mo, ᒨ = me, ᓀ = na, ᓂ = ni, ᓄ = no, ᓅ = ne, ᓵ = sa, ᓯ = si, ᓱ = so, ᓲ = se.",
+                questions: [
+                    {
+                        question: "Quelle lettre est ᒪ en cri ?",
+                        options: ["ma", "mi", "mo", "me"],
+                        correct: 0,
+                        explanation: "ᒪ = ma en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᒥ en cri ?",
+                        options: ["mi", "ma", "mo", "me"],
+                        correct: 0,
+                        explanation: "ᒥ = mi en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᒧ en cri ?",
+                        options: ["mo", "ma", "mi", "me"],
+                        correct: 0,
+                        explanation: "ᒧ = mo en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᒨ en cri ?",
+                        options: ["me", "ma", "mi", "mo"],
+                        correct: 0,
+                        explanation: "ᒨ = me en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓀ en cri ?",
+                        options: ["na", "ni", "no", "ne"],
+                        correct: 0,
+                        explanation: "ᓀ = na en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓂ en cri ?",
+                        options: ["ni", "na", "no", "ne"],
+                        correct: 0,
+                        explanation: "ᓂ = ni en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓄ en cri ?",
+                        options: ["no", "na", "ni", "ne"],
+                        correct: 0,
+                        explanation: "ᓄ = no en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓅ en cri ?",
+                        options: ["ne", "na", "ni", "no"],
+                        correct: 0,
+                        explanation: "ᓅ = ne en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓵ en cri ?",
+                        options: ["sa", "si", "so", "se"],
+                        correct: 0,
+                        explanation: "ᓵ = sa en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓯ en cri ?",
+                        options: ["si", "sa", "so", "se"],
+                        correct: 0,
+                        explanation: "ᓯ = si en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓱ en cri ?",
+                        options: ["so", "sa", "si", "se"],
+                        correct: 0,
+                        explanation: "ᓱ = so en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓲ en cri ?",
+                        options: ["se", "sa", "si", "so"],
+                        correct: 0,
+                        explanation: "ᓲ = se en cri."
+                    }
+                ]
+            },
+            4: {
+                title: "Alphabet - Consonnes Y, L, CH",
+                content: "Apprenez les consonnes Y, L, et CH : ᔦ = ya, ᔨ = yi, ᔩ = yo, ᔪ = ye, ᓘ = la, ᓖ = li, ᓗ = lo, ᒋ = cha, ᒌ = chi, ᒍ = cho.",
+                questions: [
+                    {
+                        question: "Quelle lettre est ᔦ en cri ?",
+                        options: ["ya", "yi", "yo", "ye"],
+                        correct: 0,
+                        explanation: "ᔦ = ya en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᔨ en cri ?",
+                        options: ["yi", "ya", "yo", "ye"],
+                        correct: 0,
+                        explanation: "ᔨ = yi en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᔩ en cri ?",
+                        options: ["yo", "ya", "yi", "ye"],
+                        correct: 0,
+                        explanation: "ᔩ = yo en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᔪ en cri ?",
+                        options: ["ye", "ya", "yi", "yo"],
+                        correct: 0,
+                        explanation: "ᔪ = ye en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓘ en cri ?",
+                        options: ["la", "li", "lo", "le"],
+                        correct: 0,
+                        explanation: "ᓘ = la en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓖ en cri ?",
+                        options: ["li", "la", "lo", "le"],
+                        correct: 0,
+                        explanation: "ᓖ = li en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᓗ en cri ?",
+                        options: ["lo", "la", "li", "le"],
+                        correct: 0,
+                        explanation: "ᓗ = lo en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᒋ en cri ?",
+                        options: ["cha", "chi", "cho", "che"],
+                        correct: 0,
+                        explanation: "ᒋ = cha en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᒌ en cri ?",
+                        options: ["chi", "cha", "cho", "che"],
+                        correct: 0,
+                        explanation: "ᒌ = chi en cri."
+                    },
+                    {
+                        question: "Quelle lettre est ᒍ en cri ?",
+                        options: ["cho", "cha", "chi", "che"],
+                        correct: 0,
+                        explanation: "ᒍ = cho en cri."
+                    }
+                ]
+            },
+            5: {
+                title: "Nombres",
+                content: "Apprenez les nombres de 1 à 5 en cri.",
+                questions: [
+                    {
+                        question: "Comment dit-on '1' en cri ?",
+                        options: ["Pêyak", "Nîso", "Nisto", "Yotân"],
+                        correct: 0,
+                        explanation: "Pêyak signifie un en cri."
+                    },
+                    {
+                        question: "Comment dit-on '2' en cri ?",
+                        options: ["Pêyak", "Nîso", "Nisto", "Yotân"],
+                        correct: 1,
+                        explanation: "Nîso signifie deux en cri."
+                    }
+                ]
+            },
+            6: {
+                title: "Couleurs",
+                content: "Apprenez les couleurs de base en cri.",
+                questions: [
+                    {
+                        question: "Comment dit-on 'Rouge' en cri ?",
+                        options: ["Miskwaa", "Oskâpêyak", "Kisâkihitin", "Wâpiskâw"],
+                        correct: 0,
+                        explanation: "Miskwaa signifie rouge en cri."
+                    },
+                    {
+                        question: "Comment dit-on 'Bleu' en cri ?",
+                        options: ["Miskwaa", "Oskâpêyak", "Kisâkihitin", "Wâpiskâw"],
+                        correct: 1,
+                        explanation: "Oskâpêyak signifie bleu en cri."
+                    }
+                ]
+            },
+            7: {
+                title: "Phrases simples",
+                content: "Apprenez des phrases simples en cri.",
+                questions: [
+                    {
+                        question: "Que signifie 'Tânisi, kîkway' ?",
+                        options: ["Bonjour, comment vas-tu ?", "Merci, au revoir", "Bonjour ami", "À plus tard"],
+                        correct: 0,
+                        explanation: "'Tânisi, kîkway' signifie 'Bonjour, comment vas-tu ?' en cri."
+                    },
+                    {
+                        question: "Que signifie 'Mino ay-hay' ?",
+                        options: ["Merci beaucoup", "Bonjour ami", "Bonne nuit", "Je t'aime"],
+                        correct: 0,
+                        explanation: "'Mino ay-hay' signifie 'Merci beaucoup' en cri."
+                    }
+                ]
+            }
+        };
+
+        document.getElementById('connectBtn').addEventListener('click', connect);
+        document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+        document.getElementById('startLessonBtn').addEventListener('click', startLesson);
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+
+        async function connect() {
+            try {
+                console.log('Requesting Bluetooth device...');
+                device = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [LEGO_HUB_SERVICE] }]
+                });
+
+                console.log('Connecting to GATT server...');
+                server = await device.gatt.connect();
+
+                console.log('Getting service...');
+                service = await server.getPrimaryService(LEGO_HUB_SERVICE);
+
+                console.log('Getting characteristic...');
+                characteristic = await service.getCharacteristic(LEGO_HUB_CHARACTERISTIC);
+
+                document.getElementById('status').textContent = 'Statut : Connecté à ' + device.name;
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+
+            } catch (error) {
+                console.error('Connection failed:', error);
+                document.getElementById('status').textContent = 'Statut : Échec de la connexion - ' + error.message;
+            }
+        }
+
+        async function disconnect() {
+            if (device && device.gatt.connected) {
+                device.gatt.disconnect();
+            }
+            device = null;
+            server = null;
+            service = null;
+            characteristic = null;
+            document.getElementById('status').textContent = 'Statut : Déconnecté';
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('disconnectBtn').disabled = true;
+        }
+
+        async function sendCommand(command) {
+            if (!characteristic) {
+                console.warn('Not connected to Spike Prime');
+                return;
+            }
+            try {
+                await characteristic.writeValue(new Uint8Array(command));
+                console.log('Command sent:', command);
+            } catch (error) {
+                console.error('Failed to send command:', error);
+            }
+        }
+
+        function startLesson() {
+            const lessonId = document.getElementById('lessonSelect').value;
+            currentLesson = lessons[lessonId];
+            currentQuestionIndex = 0;
+            document.getElementById('lessonTitle').textContent = currentLesson.title;
+            document.getElementById('lessonText').textContent = currentLesson.content;
+            document.getElementById('lessonContent').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = currentLesson.questions[currentQuestionIndex];
+            const quizDiv = document.getElementById('quiz');
+            quizDiv.innerHTML = `<div class="question">${question.question}</div>`;
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'option';
+                button.addEventListener('click', () => checkAnswer(index));
+                quizDiv.appendChild(button);
+            });
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        function checkAnswer(selectedIndex) {
+            const question = currentLesson.questions[currentQuestionIndex];
+            const feedbackDiv = document.getElementById('feedback');
+            if (selectedIndex === question.correct) {
+                feedbackDiv.textContent = 'Correct ! ' + question.explanation;
+                feedbackDiv.style.color = 'green';
+                // Robot celebration: Motor A forward briefly
+                sendCommand([0x81, 0x00, 0x11, 0x51, 0x00, 0x64]); // Start motor
+                setTimeout(() => sendCommand([0x81, 0x00, 0x11, 0x51, 0x00, 0x00]), 1000); // Stop after 1s
+            } else {
+                feedbackDiv.textContent = 'Incorrect. ' + question.explanation;
+                feedbackDiv.style.color = 'red';
+                // Robot feedback: Motor A backward briefly
+                sendCommand([0x81, 0x00, 0x11, 0x51, 0x00, 0x9C]); // Start backward
+                setTimeout(() => sendCommand([0x81, 0x00, 0x11, 0x51, 0x00, 0x00]), 1000); // Stop after 1s
+            }
+            document.getElementById('nextBtn').style.display = 'inline';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentLesson.questions.length) {
+                showQuestion();
+            } else {
+                document.getElementById('quiz').innerHTML = '<p>Leçon terminée ! Choisissez une autre leçon.</p>';
+                document.getElementById('feedback').textContent = '';
+                document.getElementById('nextBtn').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
