@@ -324,8 +324,8 @@
         let service = null;
         let characteristic = null;
 
-        const LEGO_HUB_SERVICE = '0000fd02-0000-1000-8000-00805f9b34fb';
-        const LEGO_HUB_CHARACTERISTIC = '0000fd02-0001-1000-8000-00805f9b34fb';
+        const LEGO_HUB_SERVICE = '00001623-1212-efde-1623-785feabcd123';
+        const LEGO_HUB_CHARACTERISTIC = '00001624-1212-efde-1623-785feabcd123';
 
         // Lessons data
         const lessons = {
@@ -1140,7 +1140,10 @@
         async function connect() {
             try {
                 device = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,
+                    filters: [
+                        { namePrefix: 'LEGO' },
+                        { namePrefix: 'SPIKE' }
+                    ],
                     optionalServices: [LEGO_HUB_SERVICE]
                 });
 
