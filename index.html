@@ -1,77 +1,147 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Epikness - LEGO SPIKE Prime</title>
+
 <style>
 body{
     font-family: Arial, sans-serif;
-    background:#667eea;
-    color:white;
-    text-align:center;
-    padding:30px;
+    margin:0;
+    padding:25px;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    min-height:100vh;
+    color:#111;
 }
+
 .container{
-    background:white;
-    color:black;
-    max-width:850px;
+    max-width:900px;
     margin:auto;
-    border-radius:15px;
-    padding:30px;
+    background:white;
+    border-radius:18px;
+    padding:28px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);
 }
+
+h1{
+    text-align:center;
+    margin:0;
+    font-size:42px;
+}
+
+.subtitle{
+    text-align:center;
+    margin:8px 0 25px;
+    color:#444;
+    font-size:18px;
+}
+
+.controls{
+    text-align:center;
+    margin-bottom:18px;
+}
+
 button{
-    padding:12px 20px;
-    margin:10px;
-    border:none;
+    padding:12px 22px;
+    margin:7px;
+    border:0;
     border-radius:10px;
     background:#667eea;
     color:white;
-    cursor:pointer;
     font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
 }
+
 button:disabled{
     background:#aaa;
     cursor:not-allowed;
 }
+
 #status{
-    margin-top:20px;
-    padding:12px;
-    background:#f0f0f0;
+    margin:18px 0;
+    padding:14px;
     border-radius:10px;
-    color:black;
-    text-align:left;
+    background:#f2f2f2;
+    border-left:5px solid #667eea;
+    line-height:1.5;
 }
+
+.language-box{
+    text-align:center;
+    margin:25px auto;
+    padding:25px;
+    border-radius:16px;
+    background:#f7f7ff;
+    border:2px solid #d6d8ff;
+}
+
 #currentLanguage{
-    font-size:34px;
-    margin-top:30px;
+    font-size:40px;
+    font-weight:bold;
+    margin:12px 0;
+}
+
+.language-list{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px;
+    margin-top:20px;
+}
+
+.lang-item{
+    padding:14px;
+    border-radius:12px;
+    background:#eee;
     font-weight:bold;
 }
-.small{
+
+.lang-item.active{
+    background:#667eea;
+    color:white;
+}
+
+.note{
+    margin-top:18px;
     font-size:14px;
-    color:#333;
+    color:#555;
+    line-height:1.5;
 }
 </style>
 </head>
+
 <body>
-
 <div class="container">
-    <h1>Epikness</h1>
-    <h2>LEGO SPIKE Prime Language Selector</h2>
 
-    <button id="connectBtn">Connect to Robert</button>
-    <button id="disconnectBtn" disabled>Disconnect</button>
-    <button id="nextBtn">Next Language</button>
-    <button id="speakBtn">Speak</button>
+<h1>Epikness</h1>
+<div class="subtitle">Sélecteur de langue avec LEGO SPIKE Prime</div>
 
-    <div id="status">Status: Not connected</div>
+<div class="controls">
+    <button id="connectBtn">Connecter à Robert</button>
+    <button id="disconnectBtn" disabled>Déconnecter</button>
+    <button id="prevBtn">← Langue précédente</button>
+    <button id="nextBtn">Langue suivante →</button>
+    <button id="speakBtn">🔊 Écouter</button>
+</div>
 
+<div id="status">
+    Statut : Non connecté
+</div>
+
+<div class="language-box">
+    <div>Langue sélectionnée</div>
     <div id="currentLanguage">Cri</div>
+    <div>Utilisez les boutons gauche/droite du hub ou les boutons du site.</div>
+</div>
 
-    <p class="small">
-        Right hub button should move to the next language if notifications are supported.
-        Website button also works for testing.
-    </p>
+<div class="language-list" id="languageList"></div>
+
+<div class="note">
+    Note : Chrome/Edge exige un clic utilisateur pour ouvrir Bluetooth. 
+    La connexion automatique au chargement/téléchargement de la page n’est pas autorisée par le navigateur.
+</div>
+
 </div>
 
 <script>
@@ -100,10 +170,14 @@ let selectedLanguageIndex = 0;
 
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+document.getElementById('prevBtn').addEventListener('click', previousLanguage);
 document.getElementById('nextBtn').addEventListener('click', nextLanguage);
 document.getElementById('speakBtn').addEventListener('click', function(){
     speakText(languages[selectedLanguageIndex]);
 });
+
+renderLanguageList();
+updateLanguageDisplay(false);
 
 function setStatus(message){
     document.getElementById('status').innerHTML = message;
@@ -114,24 +188,45 @@ function updateButtons(isConnected){
     document.getElementById('disconnectBtn').disabled = !isConnected;
 }
 
-function updateLanguageDisplay(){
+function renderLanguageList(){
+    const list = document.getElementById('languageList');
+    list.innerHTML = "";
+
+    languages.forEach(function(language, index){
+        const div = document.createElement('div');
+        div.className = 'lang-item' + (index === selectedLanguageIndex ? ' active' : '');
+        div.textContent = language;
+        div.addEventListener('click', function(){
+            selectedLanguageIndex = index;
+            updateLanguageDisplay(true);
+        });
+        list.appendChild(div);
+    });
+}
+
+function updateLanguageDisplay(writeToHub){
     const language = languages[selectedLanguageIndex];
+
     document.getElementById('currentLanguage').textContent = language;
-    speakText(language);
-    showLanguageOnHub(language);
+    renderLanguageList();
+
+    if(writeToHub){
+        speakText(language);
+        showLanguageOnHub(language);
+    }
 }
 
 function speakText(text){
     if(!('speechSynthesis' in window)){
-        console.warn("Speech synthesis not supported.");
+        console.warn("Synthèse vocale non supportée.");
         return;
     }
 
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9;
+    utterance.lang = 'fr-CA';
+    utterance.rate = 0.85;
     utterance.pitch = 1;
 
     window.speechSynthesis.speak(utterance);
@@ -139,7 +234,7 @@ function speakText(text){
 
 async function connect(){
     try{
-        setStatus("Status: Requesting Bluetooth device...");
+        setStatus("Statut : Recherche du hub Bluetooth Robert...");
 
         device = await navigator.bluetooth.requestDevice({
             filters: [
@@ -151,41 +246,39 @@ async function connect(){
             ]
         });
 
-        setStatus("Status: Connecting to " + device.name + "...");
+        setStatus("Statut : Connexion à <b>" + device.name + "</b>...");
 
         device.addEventListener('gattserverdisconnected', onDisconnected);
 
         server = await device.gatt.connect();
 
-        // Try original LEGO Wireless Protocol service first
         try{
             service = await server.getPrimaryService(LWP3_SERVICE);
             characteristic = await service.getCharacteristic(LWP3_CHARACTERISTIC);
-            connectedMode = "LWP3 1623";
+            connectedMode = "LEGO LWP3 1623";
         }
         catch(lwpError){
-            console.warn("LWP3 not available. Trying FD02.", lwpError);
+            console.warn("Service LWP3 non disponible. Essai FD02.", lwpError);
 
             service = await server.getPrimaryService(FD02_SERVICE);
 
-            // Try RX first, then TX if RX is unavailable
             try{
                 characteristic = await service.getCharacteristic(FD02_RX_CHARACTERISTIC);
-                connectedMode = "FD02 RX";
+                connectedMode = "SPIKE FD02 RX";
             }
             catch(rxError){
                 characteristic = await service.getCharacteristic(FD02_TX_CHARACTERISTIC);
-                connectedMode = "FD02 TX";
+                connectedMode = "SPIKE FD02 TX";
             }
         }
 
-        setStatus(
-            "Status: Connected to <b>" + device.name + "</b><br>" +
-            "Bluetooth service used: <b>" + connectedMode + "</b><br>" +
-            "Current language: <b>" + languages[selectedLanguageIndex] + "</b>"
-        );
-
         updateButtons(true);
+
+        setStatus(
+            "Statut : Connecté à <b>" + device.name + "</b><br>" +
+            "Service Bluetooth : <b>" + connectedMode + "</b><br>" +
+            "Langue actuelle : <b>" + languages[selectedLanguageIndex] + "</b>"
+        );
 
         try{
             await characteristic.startNotifications();
@@ -193,25 +286,26 @@ async function connect(){
                 'characteristicvaluechanged',
                 handleHubNotification
             );
-            console.log("Notifications started.");
+            console.log("Notifications activées.");
         }
         catch(notificationError){
-            console.warn("Notifications not supported on this characteristic.", notificationError);
+            console.warn("Notifications non supportées.", notificationError);
             setStatus(
-                "Status: Connected to <b>" + device.name + "</b><br>" +
-                "Bluetooth service used: <b>" + connectedMode + "</b><br>" +
-                "Note: Hub button notifications are not supported on this selected characteristic. Use website Next Language button."
+                "Statut : Connecté à <b>" + device.name + "</b><br>" +
+                "Service Bluetooth : <b>" + connectedMode + "</b><br>" +
+                "Note : Les boutons du hub ne peuvent pas être lus avec cette caractéristique. Utilisez les boutons du site."
             );
         }
 
-        updateLanguageDisplay();
+        updateLanguageDisplay(true);
     }
     catch(error){
         console.error(error);
 
         setStatus(
-            "Status: Connection failed - " + error.message + "<br><br>" +
-            "Fix: remove Robert from Windows Bluetooth, remove it from chrome://settings/content/bluetoothDevices, restart the hub, then try again."
+            "Statut : Échec de la connexion - " + error.message + "<br><br>" +
+            "Solution : supprimez Robert dans Windows Bluetooth, puis dans " +
+            "chrome://settings/content/bluetoothDevices, redémarrez le hub et réessayez."
         );
 
         updateButtons(false);
@@ -222,13 +316,14 @@ function disconnect(){
     if(device && device.gatt && device.gatt.connected){
         device.gatt.disconnect();
     }
+
     resetConnectionState();
-    setStatus("Status: Disconnected");
+    setStatus("Statut : Déconnecté");
 }
 
 function onDisconnected(){
     resetConnectionState();
-    setStatus("Status: Hub disconnected");
+    setStatus("Statut : Hub déconnecté");
 }
 
 function resetConnectionState(){
@@ -241,28 +336,64 @@ function resetConnectionState(){
 
 function handleHubNotification(event){
     const value = new Uint8Array(event.target.value.buffer);
-    console.log("Hub notification:", Array.from(value));
+    const bytes = Array.from(value);
 
-    // For now, any hub notification moves to the next language.
-    // After you confirm the console values for right-button only, this can be restricted.
-    nextLanguage();
+    console.log("Notification du hub :", bytes);
+
+    /*
+      Best-effort hub button detection.
+
+      LEGO messages vary depending on firmware/service.
+      This code:
+      - if it clearly sees left-like values, goes previous
+      - if it clearly sees right-like values, goes next
+      - otherwise any hub button notification goes next
+    */
+
+    const text = bytes.join(",");
+
+    const maybeLeft =
+        text.includes("1,0") ||
+        text.includes("255") ||
+        bytes.includes(127);
+
+    const maybeRight =
+        text.includes("1,1") ||
+        bytes.includes(1) ||
+        bytes.includes(2);
+
+    if(maybeLeft && !maybeRight){
+        previousLanguage();
+    }
+    else{
+        nextLanguage();
+    }
 }
 
 function nextLanguage(){
-    selectedLanguageIndex = (selectedLanguageIndex + 1) % languages.length;
+    selectedLanguageIndex =
+        (selectedLanguageIndex + 1) % languages.length;
 
-    const language = languages[selectedLanguageIndex];
+    updateLanguageDisplay(true);
+    updateConnectedStatus();
+}
 
-    document.getElementById('currentLanguage').textContent = language;
+function previousLanguage(){
+    selectedLanguageIndex =
+        (selectedLanguageIndex - 1 + languages.length) % languages.length;
 
-    setStatus(
-        "Status: " + (device ? "Connected to <b>" + device.name + "</b>" : "Not connected") + "<br>" +
-        "Bluetooth service used: <b>" + (connectedMode || "none") + "</b><br>" +
-        "Current language: <b>" + language + "</b>"
-    );
+    updateLanguageDisplay(true);
+    updateConnectedStatus();
+}
 
-    speakText(language);
-    showLanguageOnHub(language);
+function updateConnectedStatus(){
+    if(device && device.gatt && device.gatt.connected){
+        setStatus(
+            "Statut : Connecté à <b>" + device.name + "</b><br>" +
+            "Service Bluetooth : <b>" + connectedMode + "</b><br>" +
+            "Langue actuelle : <b>" + languages[selectedLanguageIndex] + "</b>"
+        );
+    }
 }
 
 async function showLanguageOnHub(text){
@@ -271,17 +402,22 @@ async function showLanguageOnHub(text){
     }
 
     try{
+        /*
+          This sends the selected language to the hub characteristic.
+
+          Important:
+          Official LEGO firmware does not always display plain text directly.
+          If the hub ignores it, the website will still update and speak the language.
+        */
         const encoder = new TextEncoder();
         const data = encoder.encode(text);
 
-        // This is a plain text test write.
-        // LEGO official firmware may not display this text directly on the hub.
         await characteristic.writeValue(data);
 
-        console.log("Sent to hub:", text);
+        console.log("Envoyé au hub :", text);
     }
     catch(error){
-        console.warn("Unable to write text directly to hub:", error);
+        console.warn("Impossible d’écrire directement sur le hub :", error);
     }
 }
 </script>
